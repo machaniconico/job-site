@@ -17,6 +17,12 @@ export interface Factor {
   englishName: string;
   /** UI 表示上の軸名。N は「情緒安定性」として高低を反転表示する。 */
   displayLabel: string;
+  /**
+   * 表示時にスコアの高低を反転するか。内部スコアは常に素の因子基準だが、
+   * N（神経症傾向）は inverted=true で「情緒安定性」として反転表示する。
+   * highBlurb / lowBlurb は displayLabel（反転後）基準で記述する。
+   */
+  inverted: boolean;
   /** スコアが高い人の傾向（1〜2文） */
   highBlurb: string;
   /** スコアが低い人の傾向（1〜2文） */

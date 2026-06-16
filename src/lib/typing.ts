@@ -30,7 +30,7 @@ export function rankTypes(profile: Profile): TypeMatch[] {
   return PERSONALITY_TYPES.map((type) => ({
     type,
     fitScore: round1(fitForType(type, profile.scores)),
-  })).sort((a, b) => b.fitScore - a.fitScore);
+  })).sort((a, b) => b.fitScore - a.fitScore || a.type.id.localeCompare(b.type.id));
 }
 
 /**

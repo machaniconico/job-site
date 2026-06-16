@@ -158,6 +158,13 @@ a:hover {
 .header-nav a {
   color: var(--color-text-soft);
 }
+.header-nav a[aria-current="page"] {
+  color: var(--color-text);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--color-primary);
+  text-underline-offset: 0.25em;
+}
 .footer {
   border-top: 1px solid var(--color-border);
   margin-top: var(--space-9);

@@ -162,6 +162,34 @@
   --lift-1:   translateY(-1px);
   --lift-2:   translateY(-2px);
   --lift-3:   translateY(-3px);
+
+  /* ---------- App compatibility aliases ---------- */
+  --color-primary: var(--accent);
+  --color-primary-hover: var(--accent-dark);
+  --color-primary-soft: var(--accent-tint-15);
+  --color-bg: var(--bg-primary);
+  --color-surface: var(--bg-card);
+  --color-surface-alt: var(--bg-secondary);
+  --color-border: var(--border-color);
+  --color-text: var(--text-primary);
+  --color-text-soft: var(--text-secondary);
+  --color-text-mute: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-tint-12);
+  --radius-full: var(--radius-pill);
+  --ease-out: ease;
+  --dur-fast: 0.2s;
+  --dur-mid: 300ms;
+  --dur-slow: 500ms;
+  --step--1: var(--fs-xs);
+  --step-0: var(--fs-base);
+  --step-1: var(--fs-h5);
+  --step-2: var(--fs-h4);
+  --step-3: var(--fs-h3);
+  --step-4: var(--fs-h2);
+  --step-5: var(--fs-h1);
+  --space-7: 1.75em;
+  --space-9: 2.25em;
 }
 
 /* --------------------------------------------------------

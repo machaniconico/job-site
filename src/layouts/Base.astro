@@ -18,6 +18,11 @@ const withBase = (path: string) => `${base.replace(/\/$/, '')}/${path.replace(/^
 const home = withBase('');
 const aboutHref = withBase('about');
 const privacyHref = withBase('privacy');
+const normalizePath = (path: string) => {
+  const normalized = path.replace(/\/+$/, '');
+  return normalized === '' ? '/' : normalized;
+};
+const isCurrent = (href: string) => normalizePath(Astro.url.pathname) === normalizePath(href);
 ---
 
 <!doctype html>
@@ -28,11 +33,13 @@ const privacyHref = withBase('privacy');
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="color-scheme" content="light dark" />
+    <link rel="canonical" href={Astro.url} />
     <link rel="icon" href={withBase('favicon.svg')} type="image/svg+xml" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta name="twitter:card" content="summary_large_image" />
+    <meta property="og:url" content={Astro.url} />
+    <meta name="twitter:card" content="summary" />
   </head>
   <body>
     <a class="skip-link" href="#main">本文へスキップ</a>
@@ -44,9 +51,9 @@ const privacyHref = withBase('privacy');
           <span>性格診断</span>
         </a>
         <nav class="header-nav" aria-label="サイト内ナビゲーション">
-          <a href={home}>診断</a>
-          <a href={aboutHref}>このサイトについて</a>
-          <a href={privacyHref}>プライバシー</a>
+          <a href={home} aria-current={isCurrent(home) ? 'page' : undefined}>診断</a>
+          <a href={aboutHref} aria-current={isCurrent(aboutHref) ? 'page' : undefined}>このサイトについて</a>
+          <a href={privacyHref} aria-current={isCurrent(privacyHref) ? 'page' : undefined}>プライバシー</a>
         </nav>
       </div>
     </header>
@@ -59,8 +66,8 @@ const privacyHref = withBase('privacy');
       <div class="footer-inner">
         <span>性格診断 — Big Five をもとにした自己理解のためのサンプル診断。</span>
         <nav class="header-nav" aria-label="フッターナビゲーション">
-          <a href={aboutHref}>このサイトについて</a>
-          <a href={privacyHref}>プライバシー</a>
+          <a href={aboutHref} aria-current={isCurrent(aboutHref) ? 'page' : undefined}>このサイトについて</a>
+          <a href={privacyHref} aria-current={isCurrent(privacyHref) ? 'page' : undefined}>プライバシー</a>
         </nav>
       </div>
     </footer>

@@ -94,7 +94,7 @@ export function computeProfile(
   const scores = {} as FactorScores;
   const levels = {} as Record<FactorKey, Level>;
   for (const key of FACTOR_KEYS) {
-    const score = round1(normalize(sums[key], counts[key]));
+    const score = counts[key] === 0 ? 50 : round1(normalize(sums[key], counts[key]));
     scores[key] = score;
     levels[key] = levelOf(score);
   }

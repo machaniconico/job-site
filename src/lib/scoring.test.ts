@@ -99,8 +99,15 @@ describe('confidence', () => {
   it('is 低 when there are unanswered questions', () => {
     const partial: Answers = { q01: 4, q02: 5 };
     const profile = computeProfile(QUESTIONS, partial, { now: NOW });
+    const answeredFactors = new Set(
+      QUESTIONS.filter((q) => partial[q.id] !== undefined).map((q) => q.factor),
+    );
     expect(profile.confidence).toBe('低');
     expect(profile.completionRate).toBeLessThan(100);
+    for (const f of FACTORS.filter((factor) => !answeredFactors.has(factor))) {
+      expect(profile.scores[f]).toBe(50);
+      expect(profile.levels[f]).not.toBe('low');
+    }
   });
 
   it('is 中 when fully answered but answers have no spread', () => {
