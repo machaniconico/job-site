@@ -86,6 +86,57 @@ function scrollToSel(sel: string): void {
   $(sel)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+function renderFactorChart(profile: Profile): string {
+  const cx = 160;
+  const cy = 160;
+  const radius = 120;
+  const factors = FACTOR_DISPLAY_ORDER.map((k, i) => {
+    const angleRad = (-90 + i * 72) * (Math.PI / 180);
+    const score = displayScore(profile.scores[k], FACTORS[k].inverted);
+    return {
+      angleRad,
+      label: FACTORS[k].displayLabel,
+      score,
+      x: cx + radius * (score / 100) * Math.cos(angleRad),
+      y: cy + radius * (score / 100) * Math.sin(angleRad),
+      axisX: cx + radius * Math.cos(angleRad),
+      axisY: cy + radius * Math.sin(angleRad),
+      labelX: cx + (radius + 16) * Math.cos(angleRad),
+      labelY: cy + (radius + 16) * Math.sin(angleRad),
+    };
+  });
+  const polygonPoints = factors.map((f) => `${f.x.toFixed(1)},${f.y.toFixed(1)}`).join(' ');
+  const grid = [0.25, 0.5, 0.75, 1]
+    .map((scale) => {
+      const points = factors
+        .map((f) => `${(cx + radius * scale * Math.cos(f.angleRad)).toFixed(1)},${(cy + radius * scale * Math.sin(f.angleRad)).toFixed(1)}`)
+        .join(' ');
+      return `<polygon points="${points}" fill="none" stroke="var(--color-border)" stroke-width="1" />`;
+    })
+    .join('');
+  const axes = factors
+    .map(
+      (f) =>
+        `<line x1="${cx}" y1="${cy}" x2="${f.axisX.toFixed(1)}" y2="${f.axisY.toFixed(1)}" stroke="var(--color-border)" stroke-width="1" />`,
+    )
+    .join('');
+  const points = factors
+    .map(
+      (f) =>
+        `<circle cx="${f.x.toFixed(1)}" cy="${f.y.toFixed(1)}" r="3.5" fill="var(--color-primary)" />`,
+    )
+    .join('');
+  const labels = factors
+    .map((f, i) => {
+      const anchor = i === 0 ? 'middle' : f.labelX > cx ? 'start' : 'end';
+      return `<text x="${f.labelX.toFixed(1)}" y="${f.labelY.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="middle" font-size="12" fill="var(--color-text-soft)">${esc(f.label)}</text>`;
+    })
+    .join('');
+  const ariaLabel = factors.map((f) => `${f.label}: ${f.score}`).join(', ');
+
+  return `<svg role="img" aria-label="${esc(`5因子スコア: ${ariaLabel}`)}" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">${grid}${axes}<polygon points="${polygonPoints}" fill="var(--color-primary)" fill-opacity="0.18" stroke="var(--color-primary)" stroke-width="2" />${points}${labels}</svg>`;
+}
+
 function pageComplete(page: number): boolean {
   const start = page * PAGE_SIZE;
   return QUESTIONS.slice(start, start + PAGE_SIZE).every((q) => state.answers[q.id] != null);
@@ -189,6 +240,11 @@ function renderResult(): void {
     hero.innerHTML = `<div class="type-hero"><div class="type-icon">${esc(t.icon)}</div><div><p class="eyebrow">あなたのタイプ</p><h2>${esc(t.name)}</h2><p class="type-catch">${esc(t.catch)}</p></div><div class="confidence-card"><span>結果の信頼度</span><strong>${esc(profile.confidence)}</strong><span>${esc(profile.confidenceReason)}</span></div></div><p>${esc(t.summary)}</p><div class="grid-2"><div><p class="eyebrow">強み</p><ul>${t.strengths.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div><div><p class="eyebrow">気をつけたい点</p><ul>${t.cautions.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div></div>`;
   }
 
+  const chart = $('#factorChart');
+  if (chart) {
+    chart.innerHTML = renderFactorChart(profile);
+  }
+
   const bars = $('#factorBars');
   if (bars) {
     bars.innerHTML = FACTOR_DISPLAY_ORDER.map((k) => {
@@ -212,7 +268,8 @@ function renderResult(): void {
         const cautions = job.cautions.map((r) => `<li>${esc(r)}</li>`).join('');
         const actions = job.nextActions.map((r) => `<li>${esc(r)}</li>`).join('');
         const skills = job.skillThemes.map((s) => `<span>${esc(s)}</span>`).join('');
-        return `<article class="job-card"><div class="job-rank">#${i + 1}</div><div><div class="job-heading"><div><p class="eyebrow">${esc(job.category)}</p><h3>${esc(job.title)}</h3></div><div class="match-score"><strong>${job.matchScore}</strong><span>%</span></div></div><p>${esc(job.description)}</p><div class="skill-tags">${skills}</div><details open><summary>なぜ合うか</summary><ul>${reasons}</ul></details><details><summary>気をつけたい点</summary><ul>${cautions}</ul></details><details><summary>適性を試すアクション</summary><ul>${actions}</ul></details></div></article>`;
+        const rankClass = i < 3 ? `rank-${i + 1}` : 'rank-other';
+        return `<article class="job-card"><div class="job-rank"><span class="rank-medal ${rankClass}">${i + 1}</span></div><div><div class="job-heading"><div><p class="eyebrow"><span class="job-category">${esc(job.category)}</span></p><h3>${esc(job.title)}</h3></div><div class="match-score"><div class="score-gauge" style="--p:${job.matchScore}" aria-hidden="true"></div><strong>${job.matchScore}</strong><span>%</span></div></div><p>${esc(job.description)}</p><div class="skill-tags">${skills}</div><details open><summary>なぜ合うか</summary><ul>${reasons}</ul></details><details><summary>気をつけたい点</summary><ul>${cautions}</ul></details><details><summary>適性を試すアクション</summary><ul>${actions}</ul></details></div></article>`;
       })
       .join('');
   }

@@ -537,6 +537,18 @@ a:hover {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
+.factor-chart {
+  display: flex;
+  justify-content: center;
+  max-width: 360px;
+  margin: 0 auto var(--space-5);
+}
+.factor-chart svg {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
 
 .job-list {
   display: grid;
@@ -557,9 +569,31 @@ a:hover {
   transform: translateY(-2px);
 }
 .job-rank {
-  font-size: var(--step-2);
+  line-height: 1;
+}
+.rank-medal {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-full);
+  color: var(--color-text);
+  font-size: var(--step--1);
   font-weight: 700;
-  color: var(--color-primary);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 12%, transparent);
+}
+.rank-1 {
+  background: #fef3c7;
+}
+.rank-2 {
+  background: #e5e7eb;
+}
+.rank-3 {
+  background: #fed7aa;
+}
+.rank-other {
+  background: var(--color-surface-alt);
+  color: var(--color-text-mute);
 }
 .job-heading {
   display: flex;
@@ -567,14 +601,31 @@ a:hover {
   gap: var(--space-3);
   align-items: flex-start;
 }
+.job-category {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-surface-alt);
+  color: var(--color-text-soft);
+  font-size: 0.75rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
 .match-score {
   display: flex;
-  align-items: baseline;
-  gap: 2px;
+  align-items: center;
+  gap: var(--space-2);
   color: var(--color-primary);
 }
 .match-score strong {
   font-size: var(--step-2);
+}
+.score-gauge {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: conic-gradient(var(--color-primary) calc(var(--p) * 1%), var(--color-surface-alt) 0);
 }
 .skill-tags {
   display: flex;
@@ -634,6 +685,17 @@ a:hover {
     }
   }
 
+  @keyframes factor-polygon-in {
+    from {
+      opacity: 0;
+      transform: scale(0.82);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
   .question-card {
     animation: fade-up 0.35s var(--ease-out) both;
   }
@@ -660,6 +722,17 @@ a:hover {
   }
   #result:not([hidden]) .type-icon {
     animation: pop-in 0.42s cubic-bezier(0.2, 1.35, 0.3, 1) both;
+  }
+  .factor-chart svg polygon {
+    animation: factor-polygon-in 0.5s var(--ease-out) both;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .factor-chart svg polygon {
+    animation: none;
   }
 }
 
