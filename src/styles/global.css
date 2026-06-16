@@ -120,7 +120,7 @@ a:hover {
   padding: 0.5em 1em;
   border-radius: var(--radius-md);
   background: var(--color-primary);
-  color: #fff;
+  color: var(--accent-contrast);
   transition: top 0.15s ease;
 }
 .skip-link:focus {
@@ -146,6 +146,11 @@ a:hover {
   gap: var(--space-4);
   padding-block: var(--space-3);
 }
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
 .logo {
   display: flex;
   align-items: center;
@@ -160,7 +165,7 @@ a:hover {
   height: 2rem;
   border-radius: var(--radius-md);
   background: var(--color-primary);
-  color: #fff;
+  color: var(--accent-contrast);
   font-size: var(--step--1);
 }
 .header-nav {
@@ -177,6 +182,52 @@ a:hover {
   text-decoration: underline;
   text-decoration-color: var(--color-primary);
   text-underline-offset: 0.25em;
+}
+.theme-toggle {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text-soft);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+.theme-toggle:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: translateY(-1px);
+}
+.theme-toggle-icon {
+  position: relative;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  box-shadow: inset -0.32rem -0.2rem 0 currentColor;
+}
+.theme-toggle[aria-pressed='true'] .theme-toggle-icon {
+  border: 0;
+  background: currentColor;
+  box-shadow: none;
+  transform: scale(0.72);
+}
+.theme-toggle[aria-pressed='true'] .theme-toggle-icon::before {
+  content: '';
+  position: absolute;
+  inset: -0.42rem;
+  border-radius: inherit;
+  background:
+    linear-gradient(currentColor, currentColor) center top / 2px 0.24rem no-repeat,
+    linear-gradient(currentColor, currentColor) center bottom / 2px 0.24rem no-repeat,
+    linear-gradient(90deg, currentColor, currentColor) left center / 0.24rem 2px no-repeat,
+    linear-gradient(90deg, currentColor, currentColor) right center / 0.24rem 2px no-repeat;
 }
 .footer {
   border-top: 1px solid var(--color-border);
@@ -212,7 +263,7 @@ a:hover {
 }
 .btn-primary {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--accent-contrast);
 }
 .btn-primary:hover:not(:disabled) {
   background: var(--color-primary-hover);
@@ -618,12 +669,15 @@ a:hover {
 }
 .rank-1 {
   background: #fef3c7;
+  color: #0f172a;
 }
 .rank-2 {
   background: #e5e7eb;
+  color: #0f172a;
 }
 .rank-3 {
   background: #fed7aa;
+  color: #0f172a;
 }
 .rank-other {
   background: var(--color-surface-alt);
@@ -773,6 +827,20 @@ a:hover {
 
 /* ---------- responsive ---------- */
 @media (max-width: 760px) {
+  .header-inner,
+  .footer-inner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .header-nav {
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    font-size: var(--step--1);
+  }
   .hero-grid,
   .grid-2 {
     grid-template-columns: 1fr;
@@ -812,6 +880,7 @@ a:hover {
 @media print {
   .site-header,
   .header-nav,
+  .theme-toggle,
   .hero-actions,
   .result-actions,
   .question-actions {

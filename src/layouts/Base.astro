@@ -31,6 +31,23 @@ const isCurrent = (href: string) => normalizePath(Astro.url.pathname) === normal
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>
+      (() => {
+        const storageKey = 'personality-quiz-theme';
+        const root = document.documentElement;
+
+        try {
+          const storedTheme = localStorage.getItem(storageKey);
+          if (storedTheme === 'dark' || storedTheme === 'light') {
+            root.dataset.theme = storedTheme;
+          } else {
+            root.removeAttribute('data-theme');
+          }
+        } catch {
+          root.removeAttribute('data-theme');
+        }
+      })();
+    </script>
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="color-scheme" content="light dark" />
@@ -53,11 +70,16 @@ const isCurrent = (href: string) => normalizePath(Astro.url.pathname) === normal
           <span class="logo-mark" aria-hidden="true">BF</span>
           <span>性格診断</span>
         </a>
-        <nav class="header-nav" aria-label="サイト内ナビゲーション">
-          <a href={home} aria-current={isCurrent(home) ? 'page' : undefined}>診断</a>
-          <a href={aboutHref} aria-current={isCurrent(aboutHref) ? 'page' : undefined}>このサイトについて</a>
-          <a href={privacyHref} aria-current={isCurrent(privacyHref) ? 'page' : undefined}>プライバシー</a>
-        </nav>
+        <div class="header-actions">
+          <nav class="header-nav" aria-label="サイト内ナビゲーション">
+            <a href={home} aria-current={isCurrent(home) ? 'page' : undefined}>診断</a>
+            <a href={aboutHref} aria-current={isCurrent(aboutHref) ? 'page' : undefined}>このサイトについて</a>
+            <a href={privacyHref} aria-current={isCurrent(privacyHref) ? 'page' : undefined}>プライバシー</a>
+          </nav>
+          <button class="theme-toggle" type="button" data-theme-toggle aria-label="ダークモードに切り替え" aria-pressed="false">
+            <span class="theme-toggle-icon" aria-hidden="true"></span>
+          </button>
+        </div>
       </div>
     </header>
 
@@ -74,5 +96,48 @@ const isCurrent = (href: string) => normalizePath(Astro.url.pathname) === normal
         </nav>
       </div>
     </footer>
+    <script is:inline>
+      (() => {
+        const storageKey = 'personality-quiz-theme';
+        const root = document.documentElement;
+        const media = window.matchMedia('(prefers-color-scheme: dark)');
+        const toggles = document.querySelectorAll('[data-theme-toggle]');
+
+        const effectiveTheme = () => {
+          if (root.dataset.theme === 'dark' || root.dataset.theme === 'light') {
+            return root.dataset.theme;
+          }
+          return media.matches ? 'dark' : 'light';
+        };
+
+        const syncToggles = () => {
+          const isDark = effectiveTheme() === 'dark';
+          const label = isDark ? 'ライトモードに切り替え' : 'ダークモードに切り替え';
+          toggles.forEach((toggle) => {
+            toggle.setAttribute('aria-label', label);
+            toggle.setAttribute('aria-pressed', String(isDark));
+            toggle.setAttribute('title', label);
+          });
+        };
+
+        toggles.forEach((toggle) => {
+          toggle.addEventListener('click', () => {
+            const nextTheme = effectiveTheme() === 'dark' ? 'light' : 'dark';
+            root.dataset.theme = nextTheme;
+
+            try {
+              localStorage.setItem(storageKey, nextTheme);
+            } catch {
+              /* Theme still applies for this page view if storage is unavailable. */
+            }
+
+            syncToggles();
+          });
+        });
+
+        media.addEventListener('change', syncToggles);
+        syncToggles();
+      })();
+    </script>
   </body>
 </html>
