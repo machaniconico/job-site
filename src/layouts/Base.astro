@@ -19,6 +19,8 @@ const base = import.meta.env.BASE_URL;
 // 末尾スラッシュを正規化して内部リンクを組み立てる
 const withBase = (path: string) => `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
 const home = withBase('');
+const typesHref = withBase('types');
+const jobsHref = withBase('jobs');
 const aboutHref = withBase('about');
 const privacyHref = withBase('privacy');
 const ogImage = ogImageProp ?? new URL(withBase('og.png'), Astro.site ?? Astro.url.origin).toString();
@@ -76,6 +78,8 @@ const isCurrent = (href: string) => normalizePath(Astro.url.pathname) === normal
         <div class="header-actions">
           <nav class="header-nav" aria-label="サイト内ナビゲーション">
             <a href={home} aria-current={isCurrent(home) ? 'page' : undefined}>診断</a>
+            <a href={typesHref} aria-current={isCurrent(typesHref) ? 'page' : undefined}>タイプ一覧</a>
+            <a href={jobsHref} aria-current={isCurrent(jobsHref) ? 'page' : undefined}>仕事一覧</a>
             <a href={aboutHref} aria-current={isCurrent(aboutHref) ? 'page' : undefined}>このサイトについて</a>
             <a href={privacyHref} aria-current={isCurrent(privacyHref) ? 'page' : undefined}>プライバシー</a>
           </nav>
@@ -94,6 +98,8 @@ const isCurrent = (href: string) => normalizePath(Astro.url.pathname) === normal
       <div class="footer-inner">
         <span>性格診断 — Big Five をもとにした自己理解のためのサンプル診断。</span>
         <nav class="header-nav" aria-label="フッターナビゲーション">
+          <a href={typesHref} aria-current={isCurrent(typesHref) ? 'page' : undefined}>タイプ一覧</a>
+          <a href={jobsHref} aria-current={isCurrent(jobsHref) ? 'page' : undefined}>仕事一覧</a>
           <a href={aboutHref} aria-current={isCurrent(aboutHref) ? 'page' : undefined}>このサイトについて</a>
           <a href={privacyHref} aria-current={isCurrent(privacyHref) ? 'page' : undefined}>プライバシー</a>
         </nav>
