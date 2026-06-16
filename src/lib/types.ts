@@ -50,6 +50,14 @@ export type Answers = Record<string, LikertValue | undefined>;
 /** 因子ごとのスコア（0-100 に正規化）。 */
 export type FactorScores = Record<FactorKey, number>;
 
+/** 下位ファセットごとのスコア（0-100 に正規化）。 */
+export interface FacetScore {
+  facet: string;
+  score: number;
+  answered: number;
+  total: number;
+}
+
 /** スコア水準。閾値は scoring.ts で定義。 */
 export type Level = 'high' | 'mid' | 'low';
 

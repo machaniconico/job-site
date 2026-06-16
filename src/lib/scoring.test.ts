@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { QUESTIONS } from '../data/questions';
 import {
   computeProfile,
+  computeFacetScores,
   applyReverse,
   normalize,
   levelOf,
@@ -16,6 +17,12 @@ const NOW = '2026-06-16T00:00:00.000Z';
 
 function answerAll(value: number): Answers {
   return Object.fromEntries(QUESTIONS.map((q) => [q.id, value as Answers[string]]));
+}
+
+function facetScore(factor: FactorKey, facet: string, answers: Answers) {
+  const score = computeFacetScores(QUESTIONS, answers)[factor].find((item) => item.facet === facet);
+  expect(score).toBeDefined();
+  return score!;
 }
 
 describe('question bank integrity', () => {
@@ -84,6 +91,104 @@ describe('normalize', () => {
   });
   it('returns 0 for zero count', () => {
     expect(normalize(0, 0)).toBe(0);
+  });
+});
+
+describe('facet scoring', () => {
+  it('computes facet scores with stable factor-local facet order', () => {
+    const answers: Answers = {
+      q01: 5,
+      q07: 1,
+      q02: 1,
+      q08: 5,
+    };
+
+    const facets = computeFacetScores(QUESTIONS, answers);
+
+    expect(facets.O.map((item) => item.facet)).toEqual([
+      '審美',
+      'アイデア',
+      '行動',
+      '知的好奇心',
+      '想像',
+      '価値',
+    ]);
+    expect(facetScore('O', '審美', answers)).toEqual({
+      facet: '審美',
+      score: 100,
+      answered: 2,
+      total: 2,
+    });
+    expect(facetScore('O', 'アイデア', answers)).toEqual({
+      facet: 'アイデア',
+      score: 0,
+      answered: 2,
+      total: 2,
+    });
+  });
+
+  it('applies reverse items before aggregating a facet', () => {
+    const answers: Answers = {
+      q11: 5,
+      q16: 1,
+      q14: 1,
+      q18: 5,
+    };
+
+    expect(facetScore('C', '秩序', answers)).toEqual({
+      facet: '秩序',
+      score: 100,
+      answered: 2,
+      total: 2,
+    });
+    expect(facetScore('C', '慎重', answers)).toEqual({
+      facet: '慎重',
+      score: 0,
+      answered: 2,
+      total: 2,
+    });
+  });
+
+  it('keeps unanswered facets measurable by answered and total without marking them low', () => {
+    const answers: Answers = { q01: 4 };
+
+    expect(facetScore('O', '審美', answers)).toEqual({
+      facet: '審美',
+      score: 75,
+      answered: 1,
+      total: 2,
+    });
+    expect(facetScore('O', 'アイデア', answers)).toEqual({
+      facet: 'アイデア',
+      score: 50,
+      answered: 0,
+      total: 2,
+    });
+  });
+
+  it('aligns with the factor score when all facets in a factor are answered', () => {
+    const answers = answerAll(3);
+    const overrides: Answers = {
+      q01: 5,
+      q02: 4,
+      q03: 3,
+      q04: 2,
+      q05: 1,
+      q06: 1,
+      q07: 2,
+      q08: 3,
+      q09: 4,
+      q10: 5,
+    };
+    Object.assign(answers, overrides);
+
+    const profile = computeProfile(QUESTIONS, answers, { now: NOW });
+    const facets = computeFacetScores(QUESTIONS, answers).O;
+    const weightedFacetScore =
+      facets.reduce((sum, facet) => sum + facet.score * facet.answered, 0) /
+      facets.reduce((sum, facet) => sum + facet.answered, 0);
+
+    expect(weightedFacetScore).toBeCloseTo(profile.scores.O, 5);
   });
 });
 

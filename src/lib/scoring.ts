@@ -3,6 +3,7 @@ import type {
   Confidence,
   FactorKey,
   FactorScores,
+  FacetScore,
   Level,
   Profile,
   Question,
@@ -60,6 +61,70 @@ export function levelOf(score: number): Level {
 export interface ComputeOptions {
   /** 生成時刻を注入可能にする（テストの決定性のため）。未指定なら現在時刻。 */
   now?: string;
+}
+
+interface FacetAccumulator {
+  facet: string;
+  sum: number;
+  answered: number;
+  total: number;
+}
+
+/**
+ * 回答から Big Five 各因子のファセット別スコアを計算する。
+ * - 逆転処理と 0-100 正規化は因子スコアと同じ
+ * - facet の表示順は、各因子内で設問に初出した順に保つ
+ * - 未回答 facet は answered=0 / total>0 とし、score は中立値の 50 を返す
+ */
+export function computeFacetScores(
+  questions: Question[],
+  answers: Answers,
+): Record<FactorKey, FacetScore[]> {
+  const buckets = {} as Record<FactorKey, Map<string, FacetAccumulator>>;
+  for (const key of FACTOR_KEYS) {
+    buckets[key] = new Map();
+  }
+
+  for (const question of questions) {
+    const bucket = buckets[question.factor];
+    const existing = bucket.get(question.facet);
+    const facet =
+      existing ??
+      {
+        facet: question.facet,
+        sum: 0,
+        answered: 0,
+        total: 0,
+      };
+
+    facet.total += 1;
+
+    const raw = answers[question.id];
+    if (raw !== undefined && raw !== null) {
+      const numeric = Number(raw);
+      if (Number.isFinite(numeric)) {
+        const value = clamp(numeric, 1, 5);
+        facet.sum += applyReverse(value, question.reverse);
+        facet.answered += 1;
+      }
+    }
+
+    if (!existing) {
+      bucket.set(question.facet, facet);
+    }
+  }
+
+  const scores = {} as Record<FactorKey, FacetScore[]>;
+  for (const key of FACTOR_KEYS) {
+    scores[key] = Array.from(buckets[key].values()).map((facet) => ({
+      facet: facet.facet,
+      score: facet.answered === 0 ? 50 : round1(normalize(facet.sum, facet.answered)),
+      answered: facet.answered,
+      total: facet.total,
+    }));
+  }
+
+  return scores;
 }
 
 /**
