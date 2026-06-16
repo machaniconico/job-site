@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://machaniconico.github.io/job-site/sitemap-index.xml

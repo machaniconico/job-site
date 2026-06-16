@@ -19,8 +19,7 @@ for (const occupation of OCCUPATIONS) {
 }
 
 const title = '職業一覧 | 性格診断';
-const description =
-  '性格診断で提案する全48職業の一覧。エンジニアリングからクリエイティブ、医療・福祉まで、カテゴリ別に仕事内容を一覧できます。気になる職業から、活躍する人の傾向を読んでみてください。';
+const description = `性格診断で提案する全${OCCUPATIONS.length}職業の一覧。エンジニアリングからクリエイティブ、医療・福祉まで、カテゴリ別に仕事内容を一覧できます。気になる職業から、活躍する人の傾向を読んでみてください。`;
 ---
 
 <Base title={title} description={description}>
@@ -28,7 +27,7 @@ const description =
     <div class="container">
       <article class="panel">
         <p class="eyebrow">職業一覧</p>
-        <h1>48の職業ガイド</h1>
+        <h1>{OCCUPATIONS.length}の職業ガイド</h1>
         <p class="lead">
           性格診断が性格プロファイルから提案する職業の一覧です。カテゴリ別に並べています。気になる職業を選んで、仕事内容と活躍する人のBig Five傾向を読んでみてください。
         </p>

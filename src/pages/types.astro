@@ -10,8 +10,7 @@ const home = withBase('');
 const allTypes: PersonalityType[] = [...PERSONALITY_TYPES, BALANCED_TYPE];
 
 const title = '性格タイプ一覧 | 性格診断';
-const description =
-  'Big Five をもとにした全21タイプの一覧。それぞれのアイコン・名前・一言キャッチから、気になるタイプの紹介ページへ進めます。あなた自身のタイプは50問・約5分の診断で分かります。';
+const description = `Big Five をもとにした全${allTypes.length}タイプの一覧。それぞれのアイコン・名前・一言キャッチから、気になるタイプの紹介ページへ進めます。あなた自身のタイプは50問・約5分の診断で分かります。`;
 ---
 
 <Base title={title} description={description}>
@@ -19,7 +18,7 @@ const description =
     <div class="container">
       <article class="panel">
         <p class="eyebrow">性格タイプ一覧</p>
-        <h1>21の性格タイプ</h1>
+        <h1>{allTypes.length}の性格タイプ</h1>
         <p class="lead">
           Big Five（5因子モデル）の傾向の組み合わせから生まれる、代表的な性格タイプの一覧です。気になるタイプを選んで、特徴・強み・向きやすい仕事を読んでみてください。
         </p>
