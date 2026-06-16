@@ -401,6 +401,12 @@ a:hover {
   font-weight: 700;
   color: var(--color-text-mute);
 }
+.answer-key-hint {
+  margin: var(--space-2) 0 0;
+  text-align: center;
+  font-size: var(--step--1);
+  color: var(--color-text-mute);
+}
 .answer-row {
   display: flex;
   align-items: center;
@@ -492,6 +498,10 @@ a:hover {
 }
 
 /* ---------- result ---------- */
+.result-greeting {
+  color: var(--color-text-soft);
+  font-weight: 700;
+}
 .type-hero {
   display: flex;
   gap: var(--space-5);

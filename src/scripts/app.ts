@@ -86,6 +86,42 @@ function scrollToSel(sel: string): void {
   $(sel)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+function prefersReducedMotion(): boolean {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function easeOutCubic(progress: number): number {
+  return 1 - Math.pow(1 - progress, 3);
+}
+
+function animateIntegerText(el: HTMLElement, target: number): void {
+  const finalValue = Math.round(target);
+  el.textContent = prefersReducedMotion() ? String(finalValue) : '0';
+  if (prefersReducedMotion()) return;
+
+  const duration = 620;
+  const start = performance.now();
+  const step = (now: number): void => {
+    const progress = Math.min((now - start) / duration, 1);
+    el.textContent = String(Math.round(finalValue * easeOutCubic(progress)));
+    if (progress < 1) {
+      requestAnimationFrame(step);
+      return;
+    }
+    el.textContent = String(finalValue);
+  };
+  requestAnimationFrame(step);
+}
+
+function animateResultNumbers(): void {
+  $$('#factorBars .bar-value, #jobList .match-score strong').forEach((el) => {
+    if (!(el instanceof HTMLElement)) return;
+    const target = Number(el.textContent?.trim());
+    if (!Number.isFinite(target)) return;
+    animateIntegerText(el, target);
+  });
+}
+
 function renderFactorChart(profile: Profile): string {
   const cx = 160;
   const cy = 160;
@@ -142,6 +178,23 @@ function pageComplete(page: number): boolean {
   return QUESTIONS.slice(start, start + PAGE_SIZE).every((q) => state.answers[q.id] != null);
 }
 
+function handleNumericAnswerKey(event: KeyboardEvent): void {
+  if (event.isComposing || !/^[1-5]$/.test(event.key)) return;
+
+  const target = event.target;
+  if (!(target instanceof Element)) return;
+  const scale = target.closest('.answer-scale');
+  if (!(scale instanceof HTMLElement)) return;
+
+  const input = scale.querySelector<HTMLInputElement>(`input[type="radio"][value="${event.key}"]`);
+  if (!input) return;
+
+  event.preventDefault();
+  input.checked = true;
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+  input.focus({ preventScroll: true });
+}
+
 function renderProgress(): void {
   const count = answeredCount();
   const pct = Math.round((count / QUESTION_COUNT) * 100);
@@ -180,12 +233,13 @@ function renderQuestions(): void {
   list.innerHTML = items
     .map((q, i) => {
       const num = start + i + 1;
+      const hintId = `${q.id}-key-hint`;
       const opts = ANSWER_OPTIONS.map((o) => {
         const checked = Number(state.answers[q.id]) === o.value ? 'checked' : '';
         const inputId = `${q.id}-${o.value}`;
         return `<div class="answer-choice"><input id="${esc(inputId)}" type="radio" name="${esc(q.id)}" value="${o.value}" ${checked} aria-label="${esc(o.label)}"><label class="answer-circle" for="${esc(inputId)}" data-pole="${esc(o.pole)}" aria-label="${esc(o.label)}"><span class="sr-only">${esc(o.label)}</span></label></div>`;
       }).join('');
-      return `<article class="question-card"><div class="question-meta"><span>Q${num}</span><span>${esc(FACTORS[q.factor].displayLabel)}</span></div><h3>${esc(q.text)}</h3><fieldset class="answer-scale" role="radiogroup" aria-label="${esc(q.text)}"><legend class="sr-only">${esc(q.text)}</legend><div class="answer-guides" aria-hidden="true"><span>当てはまらない ←</span><span>→ 当てはまる</span></div><div class="answer-row">${opts}</div></fieldset></article>`;
+      return `<article class="question-card"><div class="question-meta"><span>Q${num}</span><span>${esc(FACTORS[q.factor].displayLabel)}</span></div><h3>${esc(q.text)}</h3><fieldset class="answer-scale" role="radiogroup" aria-label="${esc(q.text)}" aria-describedby="${esc(hintId)}"><legend class="sr-only">${esc(q.text)}</legend><div class="answer-guides" aria-hidden="true"><span>当てはまらない ←</span><span>→ 当てはまる</span></div><div class="answer-row">${opts}</div><p class="answer-key-hint" id="${esc(hintId)}">数字キー 1〜5 でも選べます</p></fieldset></article>`;
     })
     .join('');
 
@@ -274,6 +328,7 @@ function renderResult(): void {
       .join('');
   }
 
+  animateResultNumbers();
   show('#result', true);
   scrollToSel('#result');
 }
@@ -320,6 +375,7 @@ function init(): void {
     renderQuestions();
     scrollToSel('#diagnosis');
   });
+  $('#questionList')?.addEventListener('keydown', handleNumericAnswerKey);
   $('#finishBtn')?.addEventListener('click', () => renderResult());
   $('#retakeBtn')?.addEventListener('click', () => {
     clearAll();
