@@ -4,6 +4,36 @@ import { FACTORS, FACTOR_DISPLAY_ORDER } from '../data/dimensions';
 import { QUESTION_COUNT } from '../data/questions';
 import { OCCUPATIONS } from '../data/occupations';
 import { PERSONALITY_TYPES } from '../data/personalityTypes';
+
+// 内部リンクは Base.astro に倣ってローカルに組み立てる（末尾スラッシュを正規化）。
+const base = import.meta.env.BASE_URL;
+const withBase = (path: string) => `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+const typesHref = withBase('types');
+const jobsHref = withBase('jobs');
+
+// 「診断でわかること」プレビューのカード（件数はデータ駆動で陳腐化させない）。
+const previewCards = [
+  {
+    icon: '✨',
+    title: 'あなたの性格タイプ',
+    body: `${PERSONALITY_TYPES.length}種の代表タイプ＋バランス型から、いちばん近いものを言葉にして返します。`,
+  },
+  {
+    icon: '🧭',
+    title: '5つの性格因子スコア',
+    body: 'Big Five の5因子を0〜100で見える化。レーダーチャートで全体の傾向をつかめます。',
+  },
+  {
+    icon: '💼',
+    title: '性格に合いやすい仕事',
+    body: `${OCCUPATIONS.length}職業の中から、あなたの傾向と近いものを相対的に並べて提示します。`,
+  },
+  {
+    icon: '🔍',
+    title: '近いタイプとファセット内訳',
+    body: '次に近いタイプや、各因子の下位ファセットの内訳まで掘り下げて確認できます。',
+  },
+];
 ---
 
 <Base>
@@ -33,6 +63,45 @@ import { PERSONALITY_TYPES } from '../data/personalityTypes';
           <div><span class="stat-value"><span class="stat-icon" aria-hidden="true">💼</span><strong>{OCCUPATIONS.length}</strong></span><span>職業候補</span></div>
         </div>
       </aside>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="eyebrow">診断でわかること</p>
+      <h2>答え終えると、こんなことが見えてきます</h2>
+      <p class="lead">
+        当たり外れを決めつけるものではなく、自分を言葉にして見つめ直すきっかけとして使ってください。
+      </p>
+      <ul class="preview-grid">
+        {
+          previewCards.map((card) => (
+            <li class="preview-card">
+              <span class="preview-icon" aria-hidden="true">{card.icon}</span>
+              <h3 class="preview-title">{card.title}</h3>
+              <p class="preview-body">{card.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="explore-panel">
+        <div class="explore-text">
+          <p class="eyebrow">先に眺めてみる</p>
+          <h2>診断しなくても、タイプと仕事は見られます</h2>
+          <p>
+            どんなタイプや職業があるのか気になったら、一覧から先にのぞいてみてください。診断は気が向いたときで大丈夫です。
+          </p>
+        </div>
+        <div class="explore-actions">
+          <a class="btn btn-primary" href={typesHref}>タイプを見る（{PERSONALITY_TYPES.length}種）</a>
+          <a class="btn btn-secondary" href={jobsHref}>仕事を見る（{OCCUPATIONS.length}職業）</a>
+        </div>
+      </div>
     </div>
   </section>
 
