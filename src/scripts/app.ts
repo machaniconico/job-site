@@ -138,6 +138,12 @@ function typePageUrl(typeId: string): string {
   return `${location.origin}${base}/type/${typeId}/`;
 }
 
+/** 職業詳細ページの絶対URL（location.origin + BASE_URL 正規化 + job/<id>/）。 */
+function jobPageUrl(jobId: string): string {
+  const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
+  return `${location.origin}${base}/job/${jobId}/`;
+}
+
 function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
@@ -446,7 +452,7 @@ function renderResult(): void {
         const actions = job.nextActions.map((r) => `<li>${esc(r)}</li>`).join('');
         const skills = job.skillThemes.map((s) => `<span>${esc(s)}</span>`).join('');
         const rankClass = i < 3 ? `rank-${i + 1}` : 'rank-other';
-        return `<article class="job-card"><div class="job-rank"><span class="rank-medal ${rankClass}">${i + 1}</span></div><div><div class="job-heading"><div><p class="eyebrow"><span class="job-category">${esc(job.category)}</span></p><h3>${esc(job.title)}</h3></div><div class="match-score"><div class="score-gauge" style="--p:${job.matchScore}" aria-hidden="true"></div><strong>${job.matchScore}</strong><span>%</span></div></div><p>${esc(job.description)}</p><div class="skill-tags">${skills}</div><details open><summary>なぜ合うか</summary><ul>${reasons}</ul></details><details><summary>気をつけたい点</summary><ul>${cautions}</ul></details><details><summary>適性を試すアクション</summary><ul>${actions}</ul></details></div></article>`;
+        return `<article class="job-card"><div class="job-rank"><span class="rank-medal ${rankClass}">${i + 1}</span></div><div><div class="job-heading"><div><p class="eyebrow"><span class="job-category">${esc(job.category)}</span></p><h3>${esc(job.title)}</h3></div><div class="match-score"><div class="score-gauge" style="--p:${job.matchScore}" aria-hidden="true"></div><strong>${job.matchScore}</strong><span>%</span></div></div><p>${esc(job.description)}</p><div class="skill-tags">${skills}</div><details open><summary>なぜ合うか</summary><ul>${reasons}</ul></details><details><summary>気をつけたい点</summary><ul>${cautions}</ul></details><details><summary>適性を試すアクション</summary><ul>${actions}</ul></details><p class="job-detail-link"><a href="${esc(jobPageUrl(job.id))}">この仕事を詳しく見る</a></p></div></article>`;
       })
       .join('');
   }

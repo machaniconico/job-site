@@ -1,0 +1,117 @@
+---
+import Base from '../../layouts/Base.astro';
+import { OCCUPATIONS } from '../../data/occupations';
+import { FACTORS, FACTOR_DISPLAY_ORDER } from '../../data/dimensions';
+import { displayScore } from '../../lib/scoring';
+import type { Occupation } from '../../lib/types';
+
+export function getStaticPaths() {
+  return OCCUPATIONS.map((occupation) => ({
+    params: { id: occupation.id },
+    props: { occupation },
+  }));
+}
+
+interface Props {
+  occupation: Occupation;
+}
+
+const { occupation } = Astro.props;
+
+const base = import.meta.env.BASE_URL;
+const withBase = (path: string) => `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+const home = withBase('');
+
+const title = `${occupation.title}に向いている人の傾向 | 性格診断`;
+const description = `${occupation.title}（${occupation.category}）の仕事内容・活かせる強み・気をつけたい点と、活躍する人のBig Five傾向。${occupation.description}`;
+
+// 「この仕事で活躍する人の傾向」バー。N は displayScore で「情緒安定性」として反転表示する。
+const profileBars = FACTOR_DISPLAY_ORDER.map((key) => {
+  const factor = FACTORS[key];
+  const value = displayScore(occupation.profile[key], factor.inverted);
+  return {
+    key,
+    displayLabel: factor.displayLabel,
+    englishName: factor.englishName,
+    inverted: factor.inverted,
+    value,
+  };
+});
+---
+
+<Base title={title} description={description}>
+  <section class="section">
+    <div class="container">
+      <article class="panel">
+        <p class="eyebrow">職業ガイド</p>
+        <div class="job-detail-head">
+          <h1>{occupation.title}</h1>
+          <span class="job-category">{occupation.category}</span>
+        </div>
+        <p class="lead">{occupation.description}</p>
+
+        <div class="grid-2" style="margin-top: var(--space-6)">
+          <div>
+            <p class="eyebrow">活かせるスキル</p>
+            <div class="skill-tags">
+              {occupation.skillThemes.map((theme) => <span>{theme}</span>)}
+            </div>
+          </div>
+          <div>
+            <p class="eyebrow">次に試せること</p>
+            <ul class="job-detail-list">
+              {occupation.nextActions.map((action) => <li>{action}</li>)}
+            </ul>
+          </div>
+        </div>
+
+        <div style="margin-top: var(--space-6)">
+          <p class="eyebrow">気をつけたい点</p>
+          <ul class="job-detail-list">
+            {occupation.cautions.map((caution) => <li>{caution}</li>)}
+          </ul>
+        </div>
+      </article>
+
+      <article class="panel" style="margin-top: var(--space-5)">
+        <p class="eyebrow">この仕事で活躍する人の傾向</p>
+        <p class="job-detail-note">
+          Big Five（5因子）でみた、この職業で力を発揮しやすい人のおおまかな傾向です。あくまで目安で、当てはまらなくても活躍できます。
+        </p>
+        <div class="bars">
+          {
+            profileBars.map((bar) => (
+              <>
+                <div class="bar-row">
+                  <span class="bar-label">
+                    {bar.displayLabel}
+                    <small>{bar.englishName}</small>
+                  </span>
+                  <span class="bar-track">
+                    <span style={`width: ${bar.value}%`} />
+                  </span>
+                  <span class="bar-value">{bar.value}</span>
+                </div>
+                {bar.inverted && (
+                  <p class="bar-daily">
+                    ※「情緒安定性」は神経症傾向を反転した表示です。高いほど、プレッシャーの中でも落ち着きを保ちやすい傾向。
+                  </p>
+                )}
+              </>
+            ))
+          }
+        </div>
+      </article>
+
+      <article class="panel job-detail-cta" style="margin-top: var(--space-5)">
+        <p class="eyebrow">あなたの適性を診断する</p>
+        <p>
+          50問・約5分の診断で、あなたのBig Five傾向と、性格に合った職業がわかります。{occupation.title}があなたに向いているかも、診断結果から見えてきます。
+        </p>
+        <div class="hero-actions" style="margin-block: var(--space-4) 0">
+          <a class="btn btn-primary" href={home}>診断をはじめる</a>
+        </div>
+      </article>
+    </div>
+  </section>
+</Base>

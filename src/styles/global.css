@@ -891,6 +891,39 @@ a:hover {
   margin-top: var(--space-5);
 }
 
+/* ---------- job detail page ---------- */
+.job-detail-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.job-detail-head h1 {
+  margin: 0;
+}
+.job-detail-list {
+  margin: var(--space-2) 0 0;
+  padding-left: 1.2em;
+  color: var(--color-text-soft);
+}
+.job-detail-list li {
+  margin-bottom: var(--space-2);
+}
+.job-detail-note {
+  font-size: var(--step--1);
+  color: var(--color-text-mute);
+}
+.job-detail-cta {
+  background: var(--color-accent-soft);
+  border-color: color-mix(in srgb, var(--color-accent) 24%, var(--color-border));
+}
+.job-detail-link {
+  margin: var(--space-3) 0 0;
+  font-size: var(--step--1);
+  font-weight: 700;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   @keyframes fade-up {
     from {
