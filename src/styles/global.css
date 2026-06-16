@@ -389,6 +389,12 @@ a:hover {
   font-size: var(--step--1);
   color: var(--color-text-soft);
 }
+.about-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
 
 /* ---------- progress ---------- */
 .progress-shell {

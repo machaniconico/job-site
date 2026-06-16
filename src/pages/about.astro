@@ -1,6 +1,28 @@
 ---
 import Base from '../layouts/Base.astro';
 import { FACTORS, FACTOR_DISPLAY_ORDER } from '../data/dimensions';
+import { PERSONALITY_TYPES } from '../data/personalityTypes';
+import { OCCUPATIONS } from '../data/occupations';
+import { QUESTION_COUNT } from '../data/questions';
+
+const base = import.meta.env.BASE_URL;
+// 末尾スラッシュを正規化して base 配下の内部リンクを組み立てる（Base.astro 他ページに倣う）
+const withBase = (path: string) => `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+const typesHref = withBase('types');
+const jobsHref = withBase('jobs');
+
+const typeCount = PERSONALITY_TYPES.length;
+const occupationCount = OCCUPATIONS.length;
+const factorCount = FACTOR_DISPLAY_ORDER.length;
+const perFactorCount = Math.round(QUESTION_COUNT / factorCount);
+// 各因子の代表 facet 例（平易な言い回しで本文に添える）。
+const facetSamples: { key: (typeof FACTOR_DISPLAY_ORDER)[number]; examples: string }[] = [
+  { key: 'O', examples: '審美（美しいものへの感度）／知的好奇心／想像' },
+  { key: 'C', examples: '秩序／達成追求／自己鍛錬' },
+  { key: 'E', examples: '群居性／自己主張／活動性' },
+  { key: 'A', examples: '思いやり／協調（譲り合い）' },
+  { key: 'N', examples: '不安／情緒の揺れ／落ち着き' },
+];
 ---
 
 <Base
@@ -12,11 +34,14 @@ import { FACTORS, FACTOR_DISPLAY_ORDER } from '../data/dimensions';
       <article class="panel">
         <p class="eyebrow">About</p>
         <h1>このサイトについて</h1>
+        <p class="lead">
+          この診断は、性格心理学で最も実証研究の蓄積がある <strong>Big Five（5因子モデル）</strong> をもとに、あなたの性格傾向を測定し、そこから導かれるタイプと「性格に合いやすい仕事」を提案するものです。
+        </p>
         <p>
-          この診断は、性格心理学で最も実証研究の蓄積がある <strong>Big Five（5因子モデル）</strong> をもとに、あなたの性格傾向を測定し、そこから導かれるタイプと「性格に合いやすい仕事」を提案するものです。職業への興味を直接聞くのではなく、まず<strong>性格を測り、その性格から適職を導く</strong>という順序で作っています。
+          職業への興味を直接聞くのではなく、まず<strong>性格を測り、その性格から適職を導く</strong>という順序で作っています。設問は{QUESTION_COUNT}問・約5分。回答はすべてあなたのブラウザの中だけで処理され、サーバーには送られません。
         </p>
 
-        <h2>5つの性格因子</h2>
+        <h2>{factorCount}つの性格因子</h2>
         <ul class="axis-list">
           {
             FACTOR_DISPLAY_ORDER.map((k) => (
@@ -32,19 +57,66 @@ import { FACTORS, FACTOR_DISPLAY_ORDER } from '../data/dimensions';
 
         <h2>診断の仕組み</h2>
         <p>
-          各因子を10問ずつ、合計50問の5件法で測ります。各因子には「逆転項目」を半数入れており、すべて同じ強さで答えても極端な結果にならないよう、回答のクセ（とりあえず高め・低めに付ける傾向）を打ち消しています。スコアは各因子0〜100に変換し、似た性格傾向を持つ12の代表タイプのうち最も近いものを判定します。職業は、各職業で活躍しやすい人の性格プロファイルとの近さで並べています。
+          {factorCount}つの因子を{perFactorCount}問ずつ、合計{QUESTION_COUNT}問の5件法で測ります。各因子には「逆転項目」を半数入れており、すべて同じ強さで答えても極端な結果にならないよう、回答のクセ（とりあえず高め・低めに付ける傾向）を打ち消しています。スコアは各因子0〜100に変換し、似た性格傾向を持つ{typeCount}の代表タイプ（および、どれにも強く寄らない「バランス型」）のうち最も近いものを判定します。職業は、{occupationCount}種の職業それぞれで活躍しやすい人の性格プロファイルとの近さで並べています。
         </p>
 
-        <h2>結果の読み方と限界</h2>
+        <h2>因子は「ファセット」で立体的に測る</h2>
         <p>
-          スコアは「一般の人と比べた偏差値」ではなく、<strong>あなたの回答の中での相対的な高さ</strong>です。心理検査としての標準化や規範データの整備は行っていないため、結果は<strong>自己理解のきっかけ</strong>として受け取ってください。性格は状況や経験で変わり得ますし、向いている仕事は性格だけで決まるものでもありません。本診断は、医療・心理判定・採用選考・合否判断の根拠には使用できません。
+          1つの因子は、いくつかの<strong>ファセット（下位特性）</strong>に分けて測っています。同じ「開放性が高い」でも、美しいものに感動しやすいのか、抽象的なアイデアを考えるのが好きなのかは人によって違います。そこで各因子の設問は、似た文の言い換えを並べるのではなく、異なるファセットを少しずつ突くように作っています。
+        </p>
+        <ul class="axis-list">
+          {
+            facetSamples.map((f) => (
+              <li>
+                <strong>{FACTORS[f.key].displayLabel}の主なファセット</strong>
+                <span>{f.examples}</span>
+              </li>
+            ))
+          }
+        </ul>
+        <p>
+          結果画面では、5因子それぞれのスコアに加えて、<strong>因子ごとのファセット内訳</strong>も見られます。総合点が同じでも「どのファセットが効いているか」まで分かると、自分の傾向をより具体的につかめます。
+        </p>
+
+        <h2>結果でわかること</h2>
+        <ul class="axis-list">
+          <li><strong>あなたのタイプ</strong><span>{typeCount}＋バランス型の中から、いちばん近い1つを判定します。</span></li>
+          <li><strong>5因子スコア</strong><span>{factorCount}つの性格特性を0〜100で表し、レーダーチャートで全体のかたちを示します。</span></li>
+          <li><strong>ファセット内訳</strong><span>各因子の中の下位特性ごとに、どこが高め・低めかを表示します。</span></li>
+          <li><strong>近いタイプ</strong><span>判定タイプの次に当てはまりやすい候補も併せて確認できます。</span></li>
+          <li><strong>性格に合いやすい仕事</strong><span>{occupationCount}種の職業から、あなたの性格に近い順で提示します。</span></li>
+        </ul>
+        <p class="about-links">
+          <a class="btn btn-secondary" href={typesHref}>タイプ一覧を見る</a>
+          <a class="btn btn-ghost" href={jobsHref}>仕事一覧を見る</a>
+        </p>
+
+        <h2>スコアの読み方</h2>
+        <ul class="axis-list">
+          <li>
+            <strong>0〜100は「偏差値」ではない</strong>
+            <span>このスコアは一般の人と比べた数値ではなく、<strong>あなたの回答の中での相対的な高さ</strong>です。たとえば外向性70なら「あなたの5因子の中で外向性は高めに出た」という意味で、他人より社交的だと断定するものではありません。</span>
+          </li>
+          <li>
+            <strong>情緒安定性は「反転表示」</strong>
+            <span>内部では神経症傾向（不安や気分の揺れの出やすさ）を測っていますが、結果では分かりやすさのために高低を反転し<strong>「情緒安定性」</strong>として表示します。スコアが高いほど、プレッシャーの中でも落ち着きを保ちやすい傾向です。</span>
+          </li>
+          <li>
+            <strong>信頼度は「目安」</strong>
+            <span>結果には信頼度（高・中・低）が付きます。これは<strong>どれだけ最後まで答えたか（完答率）と、回答にメリハリがあるか（ばらつき）</strong>から決まる目安です。途中で飛ばした設問が多かったり、すべて同じ点に付けていると、傾向が読み取りにくく信頼度は下がります。</span>
+          </li>
+        </ul>
+
+        <h2>結果の限界と注意</h2>
+        <p>
+          スコアは「一般の人と比べた偏差値」ではなく、<strong>あなたの回答の中での相対的な高さ</strong>です。心理検査としての標準化や規範データの整備は行っていないため、結果は<strong>自己理解のきっかけ</strong>として受け取ってください。性格は状況や経験で変わり得ますし、向いている仕事は性格だけで決まるものでもありません。本診断は、<strong>医療・心理判定・採用選考・合否判断の根拠には使用できません</strong>。
         </p>
 
         <h2>参考にした考え方</h2>
         <ul class="axis-list">
           <li>
             <strong>Big Five / 5因子モデル</strong>
-            <span>性格を開放性・誠実性・外向性・協調性・神経症傾向の5次元で捉える、性格心理学で広く使われる枠組み。</span>
+            <span>性格を開放性・誠実性・外向性・協調性・神経症傾向の{factorCount}次元で捉える、性格心理学で広く使われる枠組み。</span>
           </li>
           <li>
             <strong>性格と職業の関連</strong>
