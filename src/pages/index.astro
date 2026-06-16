@@ -1,0 +1,116 @@
+---
+import Base from '../layouts/Base.astro';
+import { FACTORS, FACTOR_DISPLAY_ORDER } from '../data/dimensions';
+import { QUESTION_COUNT } from '../data/questions';
+import { OCCUPATIONS } from '../data/occupations';
+import { PERSONALITY_TYPES } from '../data/personalityTypes';
+---
+
+<Base>
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <p class="eyebrow">Big Five personality test</p>
+        <h1>あなたの性格を測って、<br />強みと向いてる仕事まで。</h1>
+        <p class="lead">
+          心理学で最も広く使われる Big Five（5因子）で性格を測定。{QUESTION_COUNT}問・約5分で、あなたのタイプ・5つの性格特性・性格に合った職業を提案します。
+        </p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" id="startBtn" type="button">診断を始める（{QUESTION_COUNT}問）</button>
+          <button class="btn btn-secondary" id="resumeBtn" type="button" hidden>続きから</button>
+          <button class="btn btn-ghost" id="resetBtn" type="button" hidden>回答をリセット</button>
+        </div>
+        <div class="notice-box" role="note">
+          <strong>注意:</strong> 自己理解のための簡易診断です。医療・心理判定・採用選考の根拠には使えません。
+        </div>
+      </div>
+      <aside class="stat-card" aria-label="診断の概要">
+        <p class="eyebrow">この診断について</p>
+        <div class="stat-grid">
+          <div><strong>{QUESTION_COUNT}</strong><span>設問</span></div>
+          <div><strong>5</strong><span>性格因子</span></div>
+          <div><strong>{PERSONALITY_TYPES.length}</strong><span>タイプ</span></div>
+          <div><strong>{OCCUPATIONS.length}</strong><span>職業候補</span></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section" id="methodology">
+    <div class="container">
+      <p class="eyebrow">Methodology</p>
+      <h2>5つの性格因子（Big Five）</h2>
+      <p class="lead">
+        人の性格は、次の5つの大きな factor で説明できるとされています。各 factor を10問ずつ、逆転項目を入れて測ります。
+      </p>
+      <ul class="axis-list">
+        {
+          FACTOR_DISPLAY_ORDER.map((k) => (
+            <li>
+              <strong>
+                {FACTORS[k].displayLabel}（{FACTORS[k].englishName}）
+              </strong>
+              <span>{FACTORS[k].description}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" id="diagnosis" hidden>
+    <div class="container">
+      <div class="panel">
+        <p class="eyebrow">Questions</p>
+        <h2 id="pageTitle">診断</h2>
+        <div class="progress-shell" aria-label="回答の進捗">
+          <div class="progress-track" aria-hidden="true"><span class="progress-bar" id="progressBar"></span></div>
+          <div class="progress-texts">
+            <span id="progressText">0 / {QUESTION_COUNT} 問</span>
+            <span id="pageText"></span>
+          </div>
+        </div>
+        <div class="question-list" id="questionList"></div>
+        <div class="question-actions">
+          <button class="btn btn-ghost" id="prevBtn" type="button">前へ</button>
+          <span class="spacer"></span>
+          <button class="btn btn-primary" id="nextBtn" type="button">次へ</button>
+          <button class="btn btn-primary" id="finishBtn" type="button" hidden>結果を見る</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="result" hidden>
+    <div class="container">
+      <article class="panel">
+        <p class="eyebrow">Your result</p>
+        <div id="typeHero"></div>
+      </article>
+      <article class="panel" style="margin-top: var(--space-5)">
+        <h2>5つの性格スコア</h2>
+        <div class="bars" id="factorBars"></div>
+        <p id="factorNote" style="font-size: var(--step--1); color: var(--color-text-mute); margin-top: var(--space-4)"></p>
+      </article>
+      <article class="panel" style="margin-top: var(--space-5)">
+        <p class="eyebrow">Careers</p>
+        <h2>性格に合う仕事</h2>
+        <p>
+          あなたの5因子プロファイルと、各職業に向いた人の傾向との「近さ」で並べた相対的な候補です。資格・求人・収入・経験などは別途ご確認ください。
+        </p>
+        <div class="job-list" id="jobList"></div>
+      </article>
+      <div class="result-actions">
+        <button class="btn btn-secondary" id="shareBtn" type="button">結果をXでシェア</button>
+        <button class="btn btn-ghost" id="copyBtn" type="button">要約をコピー</button>
+        <button class="btn btn-ghost" id="jsonBtn" type="button">結果JSONを保存</button>
+        <button class="btn btn-ghost" id="printBtn" type="button">印刷 / PDF</button>
+        <button class="btn btn-ghost" id="retakeBtn" type="button">もう一度</button>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    import '../scripts/app.ts';
+  </script>
+</Base>

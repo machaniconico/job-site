@@ -1,0 +1,7 @@
+allowBuilds:
+  esbuild: true
+  sharp: true
+# esbuild / sharp はネイティブビルドが必要なため、ビルドスクリプトの実行を許可する。
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
