@@ -6,11 +6,19 @@
 import { QUESTIONS, QUESTION_COUNT } from '../data/questions';
 import { FACTORS, FACTOR_DISPLAY_ORDER } from '../data/dimensions';
 import { OCCUPATIONS } from '../data/occupations';
-import { computeProfile, displayScore } from '../lib/scoring';
-import { determineType } from '../lib/typing';
+import { computeProfile, computeFacetScores, displayScore } from '../lib/scoring';
+import { determineType, topTypes } from '../lib/typing';
 import { rankOccupations } from '../lib/matching';
 import { createShareCardBlob } from './shareImage';
-import type { Answers, LikertValue, OccupationMatch, PersonalityType, Profile } from '../lib/types';
+import type {
+  Answers,
+  FacetScore,
+  FactorKey,
+  LikertValue,
+  OccupationMatch,
+  PersonalityType,
+  Profile,
+} from '../lib/types';
 
 const STORAGE_KEY = 'personality-quiz-v1';
 const PAGE_SIZE = 5;
@@ -23,6 +31,33 @@ const ANSWER_OPTIONS: { value: LikertValue; label: string; pole: string }[] = [
   { value: 4, label: 'やや そう', pole: 'pos1' },
   { value: 5, label: 'そう', pole: 'pos2' },
 ];
+
+/**
+ * 各因子が「日常でどう出るか」の補強コピー（displayLabel 基準の高低）。
+ * 既存の highBlurb/lowBlurb（傾向の説明）に、具体的な場面の一言を足して厚みを出す。
+ */
+const FACTOR_DAILY_BLURB: Record<FactorKey, { high: string; low: string }> = {
+  O: {
+    high: '日常では、新しい店やテーマにすぐ興味が向き、雑談でも「なぜ?」と話を広げがち。',
+    low: '日常では、慣れた段取りや定番を選び、実証ずみのやり方で着実に進めるのが快適。',
+  },
+  C: {
+    high: '日常では、ToDoや締切を先に押さえ、やるべきことを片づけてから動くと落ち着く。',
+    low: '日常では、その時の気分や流れで動き、計画より即興でうまく回せる場面が多い。',
+  },
+  E: {
+    high: '日常では、人と話すと充電され、集まりや雑談の輪の中心になりやすい。',
+    low: '日常では、一人や少人数の静かな時間で回復し、深い対話の方が心地よい。',
+  },
+  A: {
+    high: '日常では、まわりの様子に気を配り、もめごとは穏便に収めようと動きがち。',
+    low: '日常では、思ったことを率直に伝え、馴れ合いより筋や合理を優先しやすい。',
+  },
+  N: {
+    high: '日常では、強い緊張やトラブルの中でも比較的落ち着いていられ、引きずりにくい。',
+    low: '日常では、先の心配や人の反応に敏感で、その分リスクや機微にもよく気づける。',
+  },
+};
 
 interface State {
   answers: Answers;
@@ -191,6 +226,63 @@ function renderFactorChart(profile: Profile): string {
   return `<svg role="img" aria-label="${esc(`5因子スコア: ${ariaLabel}`)}" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">${grid}${axes}<polygon points="${polygonPoints}" fill="var(--color-primary)" fill-opacity="0.18" stroke="var(--color-primary)" stroke-width="2" />${points}${labels}</svg>`;
 }
 
+/**
+ * 「近いタイプ」セクション。主タイプを除いた次点上位2件を fit% とリンク付きで描画する。
+ * BALANCED は rankTypes に含まれないため topTypes には現れない。
+ */
+function renderNearbyTypes(profile: Profile, mainTypeId: string, mainTypeName: string): string {
+  // 主タイプを除外し、フィットが弱すぎる（50%未満）ものは「近い」とは言えないので落とす。
+  // バランス型のときは候補が軒並み低フィットになりやすく、これで誤解を避ける。
+  const others = topTypes(profile, 4)
+    .filter((match) => match.type.id !== mainTypeId && match.fitScore >= 50)
+    .slice(0, 2);
+  if (others.length === 0) return '';
+
+  const cards = others
+    .map((match) => {
+      const t = match.type;
+      const fit = Math.round(match.fitScore);
+      return `<li class="nearby-card"><a class="nearby-link" href="${esc(typePageUrl(t.id))}"><span class="nearby-icon" aria-hidden="true">${esc(t.icon)}</span><span class="nearby-body"><span class="nearby-name">${esc(t.name)}</span><span class="nearby-catch">${esc(t.catch)}</span></span><span class="nearby-fit"><strong>${fit}</strong><span>% フィット</span></span></a></li>`;
+    })
+    .join('');
+
+  const otherNames = others.map((match) => match.type.name);
+  const relation =
+    otherNames.length === 2
+      ? `主に「${mainTypeName}」。${otherNames[0]}・${otherNames[1]}の一面もあわせ持っています。`
+      : `主に「${mainTypeName}」。${otherNames[0]}の一面もあわせ持っています。`;
+
+  return `<article class="panel" style="margin-top: var(--space-5)"><p class="eyebrow">あなたに近いタイプ</p><h2>主タイプの隣にいる顔</h2><p>${esc(relation)}</p><ul class="nearby-list">${cards}</ul></article>`;
+}
+
+/**
+ * 因子のファセット内訳。各因子バーの下に折りたたみでミニバーを並べる。
+ * - 未測定（answered=0）の facet は淡色で「—（未測定）」と表示し 0=low と誤解させない。
+ * - N（神経症傾向）因子は素スコア表示（高い=神経症傾向が強い）とし、注記で
+ *   情緒安定性バーとは向きが逆である旨を明示する（一貫方針）。
+ */
+function renderFacetBreakdown(facetsByFactor: Record<FactorKey, FacetScore[]>, factorKey: FactorKey): string {
+  const facets = facetsByFactor[factorKey];
+  if (!facets || facets.length === 0) return '';
+  const isNeuro = factorKey === 'N';
+
+  const rows = facets
+    .map((f) => {
+      if (f.answered === 0) {
+        return `<div class="facet-row facet-unmeasured"><div class="facet-name">${esc(f.facet)}</div><div class="facet-track" aria-hidden="true"><span style="width:0%"></span></div><div class="facet-value">—<small>未測定</small></div></div>`;
+      }
+      const score = Math.round(f.score);
+      return `<div class="facet-row"><div class="facet-name">${esc(f.facet)}</div><div class="facet-track"><span style="width:${score}%"></span></div><div class="facet-value">${score}</div></div>`;
+    })
+    .join('');
+
+  const note = isNeuro
+    ? `<p class="facet-note">この内訳は神経症傾向の素の高さ（高いほど反応しやすい）で表示しています。上の「情緒安定性」バーとは向きが逆になります。</p>`
+    : '';
+
+  return `<details class="facet-details"><summary>ファセット内訳を見る</summary>${note}<div class="facet-bars">${rows}</div></details>`;
+}
+
 function pageComplete(page: number): boolean {
   const start = page * PAGE_SIZE;
   return QUESTIONS.slice(start, start + PAGE_SIZE).every((q) => state.answers[q.id] != null);
@@ -316,11 +408,17 @@ function renderResult(): void {
     hero.innerHTML = `<div class="type-hero"><div class="type-icon" aria-hidden="true">${esc(t.icon)}</div><div><p class="eyebrow">あなたのタイプ</p><h2>${esc(t.name)}</h2><p class="type-catch">${esc(t.catch)}</p></div><div class="confidence-card"><span>結果の信頼度</span><strong>${esc(profile.confidence)}</strong><span>${esc(profile.confidenceReason)}</span></div></div><p>${esc(t.summary)}</p><div class="grid-2"><div><p class="eyebrow">強み</p><ul>${t.strengths.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div><div><p class="eyebrow">気をつけたい点</p><ul>${t.cautions.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div></div><p style="margin-top:var(--space-4)"><a href="${esc(typePageUrl(t.id))}">このタイプのページを見る</a></p>`;
   }
 
+  const nearby = $('#nearbyTypes');
+  if (nearby) {
+    nearby.innerHTML = renderNearbyTypes(profile, typeMatch.type.id, typeMatch.type.name);
+  }
+
   const chart = $('#factorChart');
   if (chart) {
     chart.innerHTML = renderFactorChart(profile);
   }
 
+  const facetsByFactor = computeFacetScores(QUESTIONS, state.answers);
   const bars = $('#factorBars');
   if (bars) {
     bars.innerHTML = FACTOR_DISPLAY_ORDER.map((k) => {
@@ -328,13 +426,15 @@ function renderResult(): void {
       const ds = displayScore(profile.scores[k], f.inverted);
       const roundedScore = Math.round(ds);
       const blurb = roundedScore >= 50 ? f.highBlurb : f.lowBlurb;
-      return `<div class="bar-row"><div class="bar-label"><strong>${esc(f.displayLabel)}</strong><small>${esc(f.englishName)}</small></div><div class="bar-track"><span style="width:${roundedScore}%"></span></div><div class="bar-value">${roundedScore}</div></div><p style="grid-column:1/-1;margin:0 0 var(--space-2);font-size:var(--step--1);color:var(--color-text-soft)">${esc(blurb)}</p>`;
+      const daily = FACTOR_DAILY_BLURB[k][roundedScore >= 50 ? 'high' : 'low'];
+      const breakdown = renderFacetBreakdown(facetsByFactor, k);
+      return `<div class="bar-row"><div class="bar-label"><strong>${esc(f.displayLabel)}</strong><small>${esc(f.englishName)}</small></div><div class="bar-track"><span style="width:${roundedScore}%"></span></div><div class="bar-value">${roundedScore}</div></div><div class="bar-detail"><p class="bar-blurb">${esc(blurb)}</p><p class="bar-daily">${esc(daily)}</p>${breakdown}</div>`;
     }).join('');
   }
   const note = $('#factorNote');
   if (note) {
     note.textContent =
-      'スコアは規範データに基づく偏差値ではなく、あなたの回答内での相対的な高さ（0〜100）です。情緒安定性は神経症傾向を反転して表示しています。';
+      'スコアは規範データに基づく偏差値ではなく、あなたの回答内での相対的な高さ（0〜100）です。情緒安定性は神経症傾向を反転して表示しています。各因子の「ファセット内訳を見る」を開くと、より細かい下位特性のスコアを確認できます。';
   }
 
   const jobList = $('#jobList');
