@@ -1,0 +1,67 @@
+---
+import Base from '../../layouts/Base.astro';
+import { PERSONALITY_TYPES, BALANCED_TYPE } from '../../data/personalityTypes';
+import type { PersonalityType } from '../../lib/types';
+
+export function getStaticPaths() {
+  const all: PersonalityType[] = [...PERSONALITY_TYPES, BALANCED_TYPE];
+  return all.map((type) => ({
+    params: { id: type.id },
+    props: { type },
+  }));
+}
+
+interface Props {
+  type: PersonalityType;
+}
+
+const { type } = Astro.props;
+
+const base = import.meta.env.BASE_URL;
+const withBase = (path: string) => `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+const home = withBase('');
+
+const title = `${type.name}（${type.catch}）| 性格診断`;
+const description = `${type.name}タイプの特徴・強み・気をつけたい点。${type.summary}`;
+const ogImage = new URL(withBase(`og/${type.id}.png`), Astro.site ?? Astro.url.origin).toString();
+---
+
+<Base title={title} description={description} ogImage={ogImage}>
+  <section class="section">
+    <div class="container">
+      <article class="panel">
+        <p class="eyebrow">性格タイプ</p>
+        <div class="type-hero">
+          <div class="type-icon" aria-hidden="true">{type.icon}</div>
+          <div>
+            <h1>{type.name}</h1>
+            <p class="type-catch">{type.catch}</p>
+          </div>
+        </div>
+        <p>{type.summary}</p>
+
+        <div class="grid-2" style="margin-top: var(--space-5)">
+          <div>
+            <p class="eyebrow">強み</p>
+            <ul>
+              {type.strengths.map((s) => <li>{s}</li>)}
+            </ul>
+          </div>
+          <div>
+            <p class="eyebrow">気をつけたい点</p>
+            <ul>
+              {type.cautions.map((c) => <li>{c}</li>)}
+            </ul>
+          </div>
+        </div>
+
+        <div class="hero-actions" style="margin-top: var(--space-5)">
+          <a class="btn btn-primary" href={home}>診断をはじめる</a>
+        </div>
+        <p style="font-size: var(--step--1); color: var(--color-text-mute); margin-top: var(--space-4)">
+          このページはタイプ紹介です。あなた自身のタイプは、50問・約5分の診断で分かります。
+        </p>
+      </article>
+    </div>
+  </section>
+</Base>
