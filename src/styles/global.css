@@ -462,7 +462,7 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(0.6rem, 3vw, 1.5rem);
+  gap: clamp(4px, 1.5vw, 8px);
   flex-wrap: nowrap;
 }
 .answer-choice {
@@ -489,39 +489,46 @@ a:hover {
   border-radius: var(--radius-full);
   border: 2px solid var(--answer-color);
   background: var(--answer-fill);
+  color: var(--color-text-soft);
   cursor: pointer;
   transition: background var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out),
     transform var(--dur-fast) var(--ease-out);
 }
 .answer-circle[data-pole='neg2'] {
-  --answer-size: 48px;
-  --answer-color: #4f46e5;
-  --answer-fill: rgba(79, 70, 229, 0.08);
-  --answer-hover: rgba(79, 70, 229, 0.16);
+  --answer-size: clamp(34px, 11vw, 48px);
+  --answer-color: var(--pole-neg2-color);
+  --answer-fill: var(--pole-neg2-fill);
+  --answer-hover: color-mix(in srgb, var(--pole-neg2-fill) 91.304%, var(--pole-neg2-color) 8.696%);
 }
 .answer-circle[data-pole='neg1'] {
-  --answer-size: 40px;
-  --answer-color: #3b82f6;
-  --answer-fill: rgba(59, 130, 246, 0.08);
-  --answer-hover: rgba(59, 130, 246, 0.16);
+  --answer-size: clamp(30px, 9vw, 40px);
+  --answer-color: var(--pole-neg1-color);
+  --answer-fill: var(--pole-neg1-fill);
+  --answer-hover: color-mix(in srgb, var(--pole-neg1-fill) 91.304%, var(--pole-neg1-color) 8.696%);
 }
 .answer-circle[data-pole='mid'] {
-  --answer-size: 34px;
-  --answer-color: #94a3b8;
-  --answer-fill: rgba(148, 163, 184, 0.12);
-  --answer-hover: rgba(148, 163, 184, 0.2);
+  --answer-size: clamp(26px, 7.5vw, 34px);
+  --answer-color: var(--pole-mid-color);
+  --answer-fill: var(--pole-mid-fill);
+  --answer-hover: color-mix(in srgb, var(--pole-mid-fill) 90.909%, var(--pole-mid-color) 9.091%);
 }
 .answer-circle[data-pole='pos1'] {
-  --answer-size: 40px;
-  --answer-color: #65a30d;
-  --answer-fill: rgba(101, 163, 13, 0.08);
-  --answer-hover: rgba(101, 163, 13, 0.16);
+  --answer-size: clamp(30px, 9vw, 40px);
+  --answer-color: var(--pole-pos1-color);
+  --answer-fill: var(--pole-pos1-fill);
+  --answer-hover: color-mix(in srgb, var(--pole-pos1-fill) 91.304%, var(--pole-pos1-color) 8.696%);
 }
 .answer-circle[data-pole='pos2'] {
-  --answer-size: 48px;
-  --answer-color: #16a34a;
-  --answer-fill: rgba(22, 163, 74, 0.08);
-  --answer-hover: rgba(22, 163, 74, 0.16);
+  --answer-size: clamp(34px, 11vw, 48px);
+  --answer-color: var(--pole-pos2-color);
+  --answer-fill: var(--pole-pos2-fill);
+  --answer-hover: color-mix(in srgb, var(--pole-pos2-fill) 91.304%, var(--pole-pos2-color) 8.696%);
+}
+.answer-digit {
+  color: var(--color-text-soft);
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
 }
 .answer-circle:hover {
   background: var(--answer-hover);
@@ -531,6 +538,9 @@ a:hover {
   box-shadow: 0 0 0 4px var(--answer-ring);
   color: #fff;
   transform: scale(1.08);
+}
+.answer-choice input:checked + .answer-circle .answer-digit {
+  color: #fff;
 }
 .answer-choice input:focus-visible + .answer-circle {
   outline: 3px solid var(--answer-color);
@@ -856,20 +866,6 @@ a:hover {
 @media (max-width: 420px) {
   .answer-guides {
     font-size: 0.68rem;
-  }
-  .answer-row {
-    gap: clamp(0.35rem, 2vw, 0.7rem);
-  }
-  .answer-circle[data-pole='neg2'],
-  .answer-circle[data-pole='pos2'] {
-    --answer-size: 42px;
-  }
-  .answer-circle[data-pole='neg1'],
-  .answer-circle[data-pole='pos1'] {
-    --answer-size: 36px;
-  }
-  .answer-circle[data-pole='mid'] {
-    --answer-size: 30px;
   }
   .job-card {
     grid-template-columns: 1fr;

@@ -128,7 +128,8 @@ function renderFactorChart(profile: Profile): string {
   const radius = 120;
   const factors = FACTOR_DISPLAY_ORDER.map((k, i) => {
     const angleRad = (-90 + i * 72) * (Math.PI / 180);
-    const score = displayScore(profile.scores[k], FACTORS[k].inverted);
+    const ds = displayScore(profile.scores[k], FACTORS[k].inverted);
+    const score = Math.round(ds);
     return {
       angleRad,
       label: FACTORS[k].displayLabel,
@@ -204,18 +205,19 @@ function renderProgress(): void {
   if (text) text.textContent = `${count} / ${QUESTION_COUNT} 問`;
   const encourage = $('#encourageText');
   if (encourage) {
-    encourage.textContent =
+    const message: { text: string; emoji?: string } =
       pct === 0
-        ? 'リラックスして、直感で答えてね 🌱'
+        ? { text: 'リラックスして、直感で答えてね', emoji: '🌱' }
         : pct < 25
-          ? 'いい調子！'
+          ? { text: 'いい調子！' }
           : pct < 50
-            ? 'その調子！もう少しで折り返し'
+            ? { text: 'その調子！もう少しで折り返し' }
             : pct < 75
-              ? '折り返し！半分こえたよ 🎉'
+              ? { text: '折り返し！半分こえたよ', emoji: '🎉' }
               : pct < 100
-                ? 'もうすぐゴール！'
-                : 'ぜんぶそろった！結果を見てみよう ✨';
+                ? { text: 'もうすぐゴール！' }
+                : { text: 'ぜんぶそろった！結果を見てみよう', emoji: '✨' };
+    encourage.innerHTML = `${esc(message.text)}${message.emoji ? ` <span aria-hidden="true">${esc(message.emoji)}</span>` : ''}`;
   }
   const pageText = $('#pageText');
   if (pageText) pageText.textContent = `ページ ${state.page + 1} / ${TOTAL_PAGES}`;
@@ -237,9 +239,9 @@ function renderQuestions(): void {
       const opts = ANSWER_OPTIONS.map((o) => {
         const checked = Number(state.answers[q.id]) === o.value ? 'checked' : '';
         const inputId = `${q.id}-${o.value}`;
-        return `<div class="answer-choice"><input id="${esc(inputId)}" type="radio" name="${esc(q.id)}" value="${o.value}" ${checked} aria-label="${esc(o.label)}"><label class="answer-circle" for="${esc(inputId)}" data-pole="${esc(o.pole)}" aria-label="${esc(o.label)}"><span class="sr-only">${esc(o.label)}</span></label></div>`;
+        return `<div class="answer-choice"><input id="${esc(inputId)}" type="radio" name="${esc(q.id)}" value="${o.value}" ${checked} aria-label="${esc(o.label)}"><label class="answer-circle" for="${esc(inputId)}" data-pole="${esc(o.pole)}" aria-label="${esc(o.label)}"><span class="answer-digit" aria-hidden="true">${o.value}</span><span class="sr-only">${esc(o.label)}</span></label></div>`;
       }).join('');
-      return `<article class="question-card"><div class="question-meta"><span>Q${num}</span><span>${esc(FACTORS[q.factor].displayLabel)}</span></div><h3>${esc(q.text)}</h3><fieldset class="answer-scale" role="radiogroup" aria-label="${esc(q.text)}" aria-describedby="${esc(hintId)}"><legend class="sr-only">${esc(q.text)}</legend><div class="answer-guides" aria-hidden="true"><span>当てはまらない ←</span><span>→ 当てはまる</span></div><div class="answer-row">${opts}</div><p class="answer-key-hint" id="${esc(hintId)}">数字キー 1〜5 でも選べます</p></fieldset></article>`;
+      return `<article class="question-card"><div class="question-meta"><span>Q${num}</span><span>${esc(FACTORS[q.factor].displayLabel)}</span></div><h3>${esc(q.text)}</h3><fieldset class="answer-scale" aria-describedby="${esc(hintId)}"><legend class="sr-only">${esc(q.text)}</legend><div class="answer-guides" aria-hidden="true"><span>当てはまらない ←</span><span>→ 当てはまる</span></div><div class="answer-row">${opts}</div><p class="answer-key-hint" id="${esc(hintId)}">数字キー 1〜5 でも選べます</p></fieldset></article>`;
     })
     .join('');
 
@@ -291,7 +293,7 @@ function renderResult(): void {
   const hero = $('#typeHero');
   if (hero) {
     const t = typeMatch.type;
-    hero.innerHTML = `<div class="type-hero"><div class="type-icon">${esc(t.icon)}</div><div><p class="eyebrow">あなたのタイプ</p><h2>${esc(t.name)}</h2><p class="type-catch">${esc(t.catch)}</p></div><div class="confidence-card"><span>結果の信頼度</span><strong>${esc(profile.confidence)}</strong><span>${esc(profile.confidenceReason)}</span></div></div><p>${esc(t.summary)}</p><div class="grid-2"><div><p class="eyebrow">強み</p><ul>${t.strengths.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div><div><p class="eyebrow">気をつけたい点</p><ul>${t.cautions.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div></div>`;
+    hero.innerHTML = `<div class="type-hero"><div class="type-icon" aria-hidden="true">${esc(t.icon)}</div><div><p class="eyebrow">あなたのタイプ</p><h2>${esc(t.name)}</h2><p class="type-catch">${esc(t.catch)}</p></div><div class="confidence-card"><span>結果の信頼度</span><strong>${esc(profile.confidence)}</strong><span>${esc(profile.confidenceReason)}</span></div></div><p>${esc(t.summary)}</p><div class="grid-2"><div><p class="eyebrow">強み</p><ul>${t.strengths.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div><div><p class="eyebrow">気をつけたい点</p><ul>${t.cautions.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div></div>`;
   }
 
   const chart = $('#factorChart');
@@ -304,8 +306,9 @@ function renderResult(): void {
     bars.innerHTML = FACTOR_DISPLAY_ORDER.map((k) => {
       const f = FACTORS[k];
       const ds = displayScore(profile.scores[k], f.inverted);
-      const blurb = ds >= 50 ? f.highBlurb : f.lowBlurb;
-      return `<div class="bar-row"><div class="bar-label"><strong>${esc(f.displayLabel)}</strong><small>${esc(f.englishName)}</small></div><div class="bar-track"><span style="width:${ds}%"></span></div><div class="bar-value">${ds}</div></div><p style="grid-column:1/-1;margin:0 0 var(--space-2);font-size:var(--step--1);color:var(--color-text-soft)">${esc(blurb)}</p>`;
+      const roundedScore = Math.round(ds);
+      const blurb = roundedScore >= 50 ? f.highBlurb : f.lowBlurb;
+      return `<div class="bar-row"><div class="bar-label"><strong>${esc(f.displayLabel)}</strong><small>${esc(f.englishName)}</small></div><div class="bar-track"><span style="width:${roundedScore}%"></span></div><div class="bar-value">${roundedScore}</div></div><p style="grid-column:1/-1;margin:0 0 var(--space-2);font-size:var(--step--1);color:var(--color-text-soft)">${esc(blurb)}</p>`;
     }).join('');
   }
   const note = $('#factorNote');

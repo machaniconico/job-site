@@ -67,7 +67,7 @@
 
   --text-primary:   #0f172a;
   --text-secondary: #475569;
-  --text-muted:     #94a3b8;
+  --text-muted:     #64748b;
 
   --border-color:   rgba(0, 0, 0, 0.08);
   --border-hover:   rgba(37, 99, 235, 0.4);
@@ -77,6 +77,17 @@
   --accent-tint-07: rgba(37, 99, 235, 0.07);
   --accent-tint-12: rgba(37, 99, 235, 0.12);
   --accent-tint-15: rgba(37, 99, 235, 0.15);
+
+  --pole-neg2-color: #4f46e5;
+  --pole-neg2-fill:  rgba(79, 70, 229, 0.08);
+  --pole-neg1-color: #3b82f6;
+  --pole-neg1-fill:  rgba(59, 130, 246, 0.08);
+  --pole-mid-color:  #94a3b8;
+  --pole-mid-fill:   rgba(148, 163, 184, 0.12);
+  --pole-pos1-color: #65a30d;
+  --pole-pos1-fill:  rgba(101, 163, 13, 0.08);
+  --pole-pos2-color: #16a34a;
+  --pole-pos2-fill:  rgba(22, 163, 74, 0.08);
 
   /* Page background wash — 4-point mesh (blue / warm / violet / blue),
    * the full brand palette scattered across the viewport. Visibly tinted
@@ -220,6 +231,17 @@
     --text-secondary: #cbd5e1;
     --text-muted:     #94a3b8;
 
+    --pole-neg2-color: #818cf8;
+    --pole-neg2-fill:  rgba(129, 140, 248, 0.20);
+    --pole-neg1-color: #60a5fa;
+    --pole-neg1-fill:  rgba(96, 165, 250, 0.20);
+    --pole-mid-color:  #cbd5e1;
+    --pole-mid-fill:   rgba(203, 213, 225, 0.18);
+    --pole-pos1-color: #a3e635;
+    --pole-pos1-fill:  rgba(163, 230, 53, 0.20);
+    --pole-pos2-color: #4ade80;
+    --pole-pos2-fill:  rgba(74, 222, 128, 0.20);
+
     --shadow-sm:      0 2px 10px rgba(0, 0, 0, 0.34);
     --shadow-md:      0 10px 34px rgba(0, 0, 0, 0.42);
     --shadow-lg:      0 18px 48px rgba(0, 0, 0, 0.50);
@@ -255,6 +277,17 @@
   --text-primary:   #f8fafc;
   --text-secondary: #cbd5e1;
   --text-muted:     #94a3b8;
+
+  --pole-neg2-color: #818cf8;
+  --pole-neg2-fill:  rgba(129, 140, 248, 0.20);
+  --pole-neg1-color: #60a5fa;
+  --pole-neg1-fill:  rgba(96, 165, 250, 0.20);
+  --pole-mid-color:  #cbd5e1;
+  --pole-mid-fill:   rgba(203, 213, 225, 0.18);
+  --pole-pos1-color: #a3e635;
+  --pole-pos1-fill:  rgba(163, 230, 53, 0.20);
+  --pole-pos2-color: #4ade80;
+  --pole-pos2-fill:  rgba(74, 222, 128, 0.20);
 
   --shadow-sm:      0 2px 10px rgba(0, 0, 0, 0.34);
   --shadow-md:      0 10px 34px rgba(0, 0, 0, 0.42);
