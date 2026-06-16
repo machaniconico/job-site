@@ -14,6 +14,7 @@ import type {
   Answers,
   FacetScore,
   FactorKey,
+  FactorScores,
   LikertValue,
   OccupationMatch,
   PersonalityType,
@@ -180,7 +181,27 @@ function animateResultNumbers(): void {
   });
 }
 
-function renderFactorChart(profile: Profile): string {
+/**
+ * タイプの pattern から「そのタイプに表れやすい素の FactorScores」を導く。
+ * 規則は Iter10 タイプページと同一: high→75 / low→25 / 指定なし→50。
+ * 返すのは素スコア（N が高い=神経症傾向が強い）。表示時は displayScore で反転される。
+ */
+function expectedScoresFromPattern(type: PersonalityType): FactorScores {
+  const scores = {} as FactorScores;
+  for (const k of FACTOR_DISPLAY_ORDER) {
+    const want = type.pattern[k];
+    scores[k] = want === 'high' ? 75 : want === 'low' ? 25 : 50;
+  }
+  return scores;
+}
+
+/**
+ * 5因子レーダー。ユーザー profile の polygon を必ず描き、
+ * typeExpected（判定タイプの期待プロファイル）が渡されたときだけ、
+ * 破線アウトラインの2系列目を重ねて「あなた」と「タイプの典型」を見比べられるようにする。
+ * 値はどちらも displayScore(値, inverted) を通す（N は情緒安定性として反転）。
+ */
+function renderFactorChart(profile: Profile, typeExpected?: FactorScores): string {
   const cx = 160;
   const cy = 160;
   const radius = 120;
@@ -188,12 +209,17 @@ function renderFactorChart(profile: Profile): string {
     const angleRad = (-90 + i * 72) * (Math.PI / 180);
     const ds = displayScore(profile.scores[k], FACTORS[k].inverted);
     const score = Math.round(ds);
+    const expected =
+      typeExpected != null ? Math.round(displayScore(typeExpected[k], FACTORS[k].inverted)) : null;
     return {
       angleRad,
       label: FACTORS[k].displayLabel,
       score,
+      expected,
       x: cx + radius * (score / 100) * Math.cos(angleRad),
       y: cy + radius * (score / 100) * Math.sin(angleRad),
+      ex: expected != null ? cx + radius * (expected / 100) * Math.cos(angleRad) : 0,
+      ey: expected != null ? cy + radius * (expected / 100) * Math.sin(angleRad) : 0,
       axisX: cx + radius * Math.cos(angleRad),
       axisY: cy + radius * Math.sin(angleRad),
       labelX: cx + (radius + 16) * Math.cos(angleRad),
@@ -227,9 +253,30 @@ function renderFactorChart(profile: Profile): string {
       return `<text x="${f.labelX.toFixed(1)}" y="${f.labelY.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="middle" font-size="12" fill="var(--color-text-soft)">${esc(f.label)}</text>`;
     })
     .join('');
-  const ariaLabel = factors.map((f) => `${f.label}: ${f.score}`).join(', ');
 
-  return `<svg role="img" aria-label="${esc(`5因子スコア: ${ariaLabel}`)}" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">${grid}${axes}<polygon points="${polygonPoints}" fill="var(--color-primary)" fill-opacity="0.18" stroke="var(--color-primary)" stroke-width="2" />${points}${labels}</svg>`;
+  // タイプの典型 polygon は塗りなし・破線アウトライン（var(--color-text-soft)）で重ね、
+  // ユーザー塗り（var(--color-primary)）と視覚的に区別する。grid と axes の上、ユーザーの下に置く。
+  const expectedPolygon =
+    typeExpected != null
+      ? `<polygon class="factor-chart-expected" points="${factors.map((f) => `${f.ex.toFixed(1)},${f.ey.toFixed(1)}`).join(' ')}" fill="none" stroke="var(--color-text-soft)" stroke-width="1.75" stroke-dasharray="5 4" stroke-linejoin="round" />`
+      : '';
+
+  const youAria = factors.map((f) => `${f.label} ${f.score}`).join('、');
+  const ariaLabel =
+    typeExpected != null
+      ? `5因子スコア。あなた: ${youAria}。タイプの典型は破線で重ねて表示しています。`
+      : `5因子スコア。あなた: ${youAria}。`;
+
+  return `<svg role="img" aria-label="${esc(ariaLabel)}" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">${grid}${axes}${expectedPolygon}<polygon points="${polygonPoints}" fill="var(--color-primary)" fill-opacity="0.18" stroke="var(--color-primary)" stroke-width="2" />${points}${labels}</svg>`;
+}
+
+/**
+ * #factorChart 直下に置く凡例。色サンプルは aria-hidden とし、テキスト（あなた / タイプの典型）で
+ * 意味を担保する。typeName が与えられたときだけタイプ系列の凡例を出す（BALANCED 時は重ねないので呼ばれない）。
+ */
+function renderFactorLegend(typeName?: string): string {
+  if (!typeName) return '';
+  return `<ul class="factor-legend"><li class="factor-legend-item"><span class="factor-legend-swatch factor-legend-you" aria-hidden="true"></span>あなた</li><li class="factor-legend-item"><span class="factor-legend-swatch factor-legend-type" aria-hidden="true"></span>${esc(typeName)}の典型</li></ul>`;
 }
 
 /**
@@ -421,7 +468,11 @@ function renderResult(): void {
 
   const chart = $('#factorChart');
   if (chart) {
-    chart.innerHTML = renderFactorChart(profile);
+    // BALANCED（pattern={}→全50）は情報量が乏しいので典型を重ねない。
+    // それ以外の判定タイプは pattern から期待プロファイルを導いて2系列目に重ねる。
+    const overlayType = typeMatch.type.id !== 'balanced';
+    const expected = overlayType ? expectedScoresFromPattern(typeMatch.type) : undefined;
+    chart.innerHTML = renderFactorChart(profile, expected) + renderFactorLegend(overlayType ? typeMatch.type.name : undefined);
   }
 
   const facetsByFactor = computeFacetScores(QUESTIONS, state.answers);
