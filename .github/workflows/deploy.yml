@@ -10,6 +10,11 @@ permissions:
   pages: write
   id-token: write
 
+# 各アクション(checkout/setup-node/pnpm/action-setup/upload-artifact/deploy-pages)を
+# Node.js 24 ランタイムで実行する。Node20 は 2026-06 以降非推奨のため明示的にオプトインする。
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 # 同時実行は1つに絞る（デプロイの競合回避）。進行中はキャンセルしない。
 concurrency:
   group: "pages"

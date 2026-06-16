@@ -3,6 +3,8 @@ import { QUESTIONS } from '../data/questions';
 import { computeProfile } from './scoring';
 import { determineType, rankTypes, fitForType, BALANCED_FALLBACK_THRESHOLD } from './typing';
 import { PERSONALITY_TYPES, BALANCED_TYPE } from '../data/personalityTypes';
+import { OCCUPATIONS } from '../data/occupations';
+import { FACTOR_KEYS } from './types';
 import type { Answers, FactorKey, Profile } from './types';
 
 const NOW = '2026-06-16T00:00:00.000Z';
@@ -23,10 +25,10 @@ function profileWith(high: FactorKey[], low: FactorKey[] = []): Profile {
 }
 
 describe('type catalog integrity', () => {
-  it('has 16 named types + a balanced fallback, all with unique ids', () => {
-    expect(PERSONALITY_TYPES).toHaveLength(16);
+  it('has 20 named types + a balanced fallback, all with unique ids', () => {
+    expect(PERSONALITY_TYPES).toHaveLength(20);
     const ids = PERSONALITY_TYPES.map((t) => t.id).concat(BALANCED_TYPE.id);
-    expect(new Set(ids).size).toBe(17);
+    expect(new Set(ids).size).toBe(21);
   });
   it('every type icon is unique', () => {
     const icons = [...PERSONALITY_TYPES, BALANCED_TYPE].map((t) => t.icon);
@@ -95,11 +97,42 @@ describe('determineType', () => {
     expect(match.fitScore).toBeGreaterThanOrEqual(BALANCED_FALLBACK_THRESHOLD);
   });
 
-  it('rankTypes returns all 16 sorted descending by fit', () => {
+  it('maps high C + low N to the newly added Realist', () => {
+    const match = determineType(profileWith(['C'], ['N']));
+    expect(match.type.id).toBe('realist');
+    expect(match.fitScore).toBeGreaterThanOrEqual(BALANCED_FALLBACK_THRESHOLD);
+  });
+
+  it('rankTypes returns all 20 sorted descending by fit', () => {
     const ranked = rankTypes(profileWith(['O', 'E']));
-    expect(ranked).toHaveLength(16);
+    expect(ranked).toHaveLength(20);
     for (let i = 1; i < ranked.length; i++) {
       expect(ranked[i - 1].fitScore).toBeGreaterThanOrEqual(ranked[i].fitScore);
+    }
+  });
+});
+
+describe('occupation catalog integrity', () => {
+  it('has 48 occupations with unique ids', () => {
+    expect(OCCUPATIONS).toHaveLength(48);
+    expect(new Set(OCCUPATIONS.map((o) => o.id)).size).toBe(48);
+  });
+  it('every occupation fully satisfies the Occupation shape', () => {
+    for (const o of OCCUPATIONS) {
+      expect(o.title.length).toBeGreaterThan(0);
+      expect(o.category.length).toBeGreaterThan(0);
+      expect(o.description.length).toBeGreaterThan(10);
+      expect(o.skillThemes).toHaveLength(5);
+      expect(o.cautions).toHaveLength(2);
+      expect(o.nextActions).toHaveLength(2);
+    }
+  });
+  it('every profile value stays in a non-extreme range (25-85)', () => {
+    for (const o of OCCUPATIONS) {
+      for (const k of FACTOR_KEYS) {
+        expect(o.profile[k]).toBeGreaterThanOrEqual(25);
+        expect(o.profile[k]).toBeLessThanOrEqual(85);
+      }
     }
   });
 });

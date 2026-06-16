@@ -35,6 +35,7 @@ let lastType: PersonalityType | null = null;
 let lastJobs: OccupationMatch[] = [];
 let lastTypeName = '';
 let lastTypeIcon = '';
+let lastTypeId = '';
 
 function $<T extends HTMLElement = HTMLElement>(sel: string): T | null {
   return document.querySelector(sel);
@@ -81,6 +82,7 @@ function clearAll(): void {
   lastJobs = [];
   lastTypeName = '';
   lastTypeIcon = '';
+  lastTypeId = '';
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch {
@@ -93,6 +95,12 @@ function show(sel: string, visible: boolean): void {
 }
 function scrollToSel(sel: string): void {
   $(sel)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/** タイプ別ページの絶対URL（location.origin + BASE_URL 正規化 + type/<id>/）。 */
+function typePageUrl(typeId: string): string {
+  const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
+  return `${location.origin}${base}/type/${typeId}/`;
 }
 
 function prefersReducedMotion(): boolean {
@@ -300,11 +308,12 @@ function renderResult(): void {
   lastJobs = jobs;
   lastTypeName = typeMatch.type.name;
   lastTypeIcon = typeMatch.type.icon;
+  lastTypeId = typeMatch.type.id;
 
   const hero = $('#typeHero');
   if (hero) {
     const t = typeMatch.type;
-    hero.innerHTML = `<div class="type-hero"><div class="type-icon" aria-hidden="true">${esc(t.icon)}</div><div><p class="eyebrow">あなたのタイプ</p><h2>${esc(t.name)}</h2><p class="type-catch">${esc(t.catch)}</p></div><div class="confidence-card"><span>結果の信頼度</span><strong>${esc(profile.confidence)}</strong><span>${esc(profile.confidenceReason)}</span></div></div><p>${esc(t.summary)}</p><div class="grid-2"><div><p class="eyebrow">強み</p><ul>${t.strengths.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div><div><p class="eyebrow">気をつけたい点</p><ul>${t.cautions.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div></div>`;
+    hero.innerHTML = `<div class="type-hero"><div class="type-icon" aria-hidden="true">${esc(t.icon)}</div><div><p class="eyebrow">あなたのタイプ</p><h2>${esc(t.name)}</h2><p class="type-catch">${esc(t.catch)}</p></div><div class="confidence-card"><span>結果の信頼度</span><strong>${esc(profile.confidence)}</strong><span>${esc(profile.confidenceReason)}</span></div></div><p>${esc(t.summary)}</p><div class="grid-2"><div><p class="eyebrow">強み</p><ul>${t.strengths.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div><div><p class="eyebrow">気をつけたい点</p><ul>${t.cautions.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div></div><p style="margin-top:var(--space-4)"><a href="${esc(typePageUrl(t.id))}">このタイプのページを見る</a></p>`;
   }
 
   const chart = $('#factorChart');
@@ -425,7 +434,8 @@ function init(): void {
     }
   });
   $('#shareBtn')?.addEventListener('click', () => {
-    const url = location.href.split('#')[0];
+    // 結果タイプの型ページURLを共有する（未判定時はトップURLにフォールバック）。
+    const url = lastTypeId ? typePageUrl(lastTypeId) : location.href.split('#')[0];
     const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(summaryText())}&url=${encodeURIComponent(url)}`;
     window.open(intent, '_blank', 'noopener');
   });

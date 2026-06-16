@@ -5,11 +5,14 @@ import '../styles/global.css';
 interface Props {
   title?: string;
   description?: string;
+  /** OGP/Twitter 画像の絶対URL。省略時は既定の og.png（後方互換）。 */
+  ogImage?: string;
 }
 
 const {
   title = '性格診断 | Big Five であなたの強みと適職を知る',
   description = 'Big Five（5因子モデル）で性格を測定し、あなたのタイプ・5つの性格特性・性格に合った職業を提案する無料の性格診断。50問・約5分、回答はすべてブラウザ内で完結します。',
+  ogImage: ogImageProp,
 } = Astro.props;
 
 const base = import.meta.env.BASE_URL;
@@ -18,7 +21,7 @@ const withBase = (path: string) => `${base.replace(/\/$/, '')}/${path.replace(/^
 const home = withBase('');
 const aboutHref = withBase('about');
 const privacyHref = withBase('privacy');
-const ogImage = new URL(withBase('og.png'), Astro.site ?? Astro.url.origin).toString();
+const ogImage = ogImageProp ?? new URL(withBase('og.png'), Astro.site ?? Astro.url.origin).toString();
 const normalizePath = (path: string) => {
   const normalized = path.replace(/\/+$/, '');
   return normalized === '' ? '/' : normalized;
