@@ -44,7 +44,8 @@ function esc(value: string): string {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 function answeredCount(): number {
   return QUESTIONS.filter((q) => state.answers[q.id] != null).length;
@@ -72,6 +73,9 @@ function load(): void {
 function clearAll(): void {
   state.answers = {};
   state.page = 0;
+  lastProfile = null;
+  lastTypeName = '';
+  lastTypeIcon = '';
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch {
@@ -339,7 +343,7 @@ function renderResult(): void {
 function summaryText(): string {
   if (!lastProfile) return '';
   const lines = FACTOR_DISPLAY_ORDER.map(
-    (k) => `${FACTORS[k].displayLabel}: ${displayScore(lastProfile!.scores[k], FACTORS[k].inverted)}`,
+    (k) => `${FACTORS[k].displayLabel}: ${Math.round(displayScore(lastProfile!.scores[k], FACTORS[k].inverted))}`,
   );
   return [`私の性格タイプは「${lastTypeIcon} ${lastTypeName}」でした！`, '', ...lines, '', '#性格診断'].join('\n');
 }

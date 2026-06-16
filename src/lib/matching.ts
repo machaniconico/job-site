@@ -74,5 +74,5 @@ export function rankOccupations(occupations: Occupation[], profile: Profile): Oc
       matchScore: matchScore(profile, occupation),
       matchReasons: buildMatchReasons(profile, occupation),
     }))
-    .sort((a, b) => b.matchScore - a.matchScore);
+    .sort((a, b) => b.matchScore - a.matchScore || a.id.localeCompare(b.id));
 }
