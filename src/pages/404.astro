@@ -1,0 +1,35 @@
+---
+import Base from '../layouts/Base.astro';
+
+const base = import.meta.env.BASE_URL;
+// 末尾スラッシュを正規化して base 配下の内部リンクを組み立てる（他ページに倣う）
+const withBase = (path: string) => `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+const home = withBase('');
+const typesHref = withBase('types');
+const jobsHref = withBase('jobs');
+---
+
+<Base
+  title="ページが見つかりません | 性格診断"
+  description="お探しのページは見つかりませんでした。トップの診断やタイプ一覧・仕事一覧からお進みください。"
+>
+  <section class="section">
+    <div class="container">
+      <article class="panel">
+        <p class="eyebrow">404</p>
+        <h1>ページが見つかりませんでした</h1>
+        <p class="lead">
+          お探しのページは、移動または削除されたか、URL が少し違っているのかもしれません。ご迷惑をおかけします。
+        </p>
+        <p>
+          まだ自分の性格タイプを知らない方は、まずは診断から。すでに気になるタイプや仕事がある方は、一覧からゆっくり探してみてください。
+        </p>
+        <div class="hero-actions" style="margin-top: var(--space-4)">
+          <a class="btn btn-primary" href={home}>診断をはじめる</a>
+          <a class="btn btn-secondary" href={typesHref}>タイプ一覧を見る</a>
+          <a class="btn btn-ghost" href={jobsHref}>仕事一覧を見る</a>
+        </div>
+      </article>
+    </div>
+  </section>
+</Base>
