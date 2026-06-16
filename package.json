@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "性格診断サイト — Big Five をベースに性格を測定し、性格に基づいた適職を提案する静的サイト。",
+  "packageManager": "pnpm@11.4.0",
   "engines": {
     "node": ">=22.12.0"
   },
