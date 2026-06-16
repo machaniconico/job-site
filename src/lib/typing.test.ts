@@ -23,10 +23,23 @@ function profileWith(high: FactorKey[], low: FactorKey[] = []): Profile {
 }
 
 describe('type catalog integrity', () => {
-  it('has 12 named types + a balanced fallback, all with unique ids', () => {
-    expect(PERSONALITY_TYPES).toHaveLength(12);
+  it('has 16 named types + a balanced fallback, all with unique ids', () => {
+    expect(PERSONALITY_TYPES).toHaveLength(16);
     const ids = PERSONALITY_TYPES.map((t) => t.id).concat(BALANCED_TYPE.id);
-    expect(new Set(ids).size).toBe(13);
+    expect(new Set(ids).size).toBe(17);
+  });
+  it('every type icon is unique', () => {
+    const icons = [...PERSONALITY_TYPES, BALANCED_TYPE].map((t) => t.icon);
+    expect(new Set(icons).size).toBe(icons.length);
+  });
+  it('every type pattern combination is unique', () => {
+    const keys = [...PERSONALITY_TYPES, BALANCED_TYPE].map((t) =>
+      (Object.keys(t.pattern) as (keyof typeof t.pattern)[])
+        .sort()
+        .map((k) => `${k}:${t.pattern[k]}`)
+        .join(','),
+    );
+    expect(new Set(keys).size).toBe(keys.length);
   });
   it('every type has name, catch, icon, summary, strengths, cautions', () => {
     for (const t of [...PERSONALITY_TYPES, BALANCED_TYPE]) {
@@ -76,9 +89,15 @@ describe('determineType', () => {
     expect(determineType(allMid).type.id).toBe('balanced');
   });
 
-  it('rankTypes returns all 12 sorted descending by fit', () => {
+  it('maps high E + low O to the newly added Mover', () => {
+    const match = determineType(profileWith(['E'], ['O']));
+    expect(match.type.id).toBe('mover');
+    expect(match.fitScore).toBeGreaterThanOrEqual(BALANCED_FALLBACK_THRESHOLD);
+  });
+
+  it('rankTypes returns all 16 sorted descending by fit', () => {
     const ranked = rankTypes(profileWith(['O', 'E']));
-    expect(ranked).toHaveLength(12);
+    expect(ranked).toHaveLength(16);
     for (let i = 1; i < ranked.length; i++) {
       expect(ranked[i - 1].fitScore).toBeGreaterThanOrEqual(ranked[i].fitScore);
     }
