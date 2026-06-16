@@ -1,0 +1,70 @@
+<!DOCTYPE html><html lang="ja"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><script>
+      (() => {
+        const storageKey = 'personality-quiz-theme';
+        const root = document.documentElement;
+
+        try {
+          const storedTheme = localStorage.getItem(storageKey);
+          if (storedTheme === 'dark' || storedTheme === 'light') {
+            root.dataset.theme = storedTheme;
+          } else {
+            root.removeAttribute('data-theme');
+          }
+        } catch {
+          root.removeAttribute('data-theme');
+        }
+      })();
+    </script><title>このサイトについて | 性格診断</title><meta name="description" content="この性格診断が使っている Big Five モデル、診断の仕組み、結果の読み方と限界について。"><meta name="color-scheme" content="light dark"><link rel="canonical" href="https://machaniconico.github.io/job-site/about/"><link rel="icon" href="/job-site/favicon.svg" type="image/svg+xml"><meta property="og:type" content="website"><meta property="og:title" content="このサイトについて | 性格診断"><meta property="og:description" content="この性格診断が使っている Big Five モデル、診断の仕組み、結果の読み方と限界について。"><meta property="og:url" content="https://machaniconico.github.io/job-site/about/"><meta property="og:image" content="https://machaniconico.github.io/job-site/og.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://machaniconico.github.io/job-site/og.png"><link rel="stylesheet" href="/job-site/_astro/Base.DvxWqeRy.css"></head> <body> <a class="skip-link" href="#main">本文へスキップ</a> <header class="site-header"> <div class="header-inner"> <a class="logo" href="/job-site/" aria-label="トップページへ"> <span class="logo-mark" aria-hidden="true">BF</span> <span>性格診断</span> </a> <div class="header-actions"> <nav class="header-nav" aria-label="サイト内ナビゲーション"> <a href="/job-site/">診断</a> <a href="/job-site/about" aria-current="page">このサイトについて</a> <a href="/job-site/privacy">プライバシー</a> </nav> <button class="theme-toggle" type="button" data-theme-toggle aria-label="ダークモードに切り替え" aria-pressed="false"> <span class="theme-toggle-icon" aria-hidden="true"></span> </button> </div> </div> </header> <main id="main">  <section class="section"> <div class="container"> <article class="panel"> <p class="eyebrow">About</p> <h1>このサイトについて</h1> <p>
+この診断は、性格心理学で最も実証研究の蓄積がある <strong>Big Five（5因子モデル）</strong> をもとに、あなたの性格傾向を測定し、そこから導かれるタイプと「性格に合いやすい仕事」を提案するものです。職業への興味を直接聞くのではなく、まず<strong>性格を測り、その性格から適職を導く</strong>という順序で作っています。
+</p> <h2>5つの性格因子</h2> <ul class="axis-list"> <li> <strong> 開放性（Openness）
+</strong> <span>新しい経験・アイデア・美への開かれ方。想像力、知的好奇心、美的感性の強さ。</span> </li><li> <strong> 誠実性（Conscientiousness）
+</strong> <span>計画性・自己統制・勤勉さ。目標に向けて段取りし、やり抜く力。</span> </li><li> <strong> 外向性（Extraversion）
+</strong> <span>社交性・活動性・刺激の求め方。エネルギーが外に向くか内に向くか。</span> </li><li> <strong> 協調性（Agreeableness）
+</strong> <span>思いやり・信頼・協力性。他者との関わりで競争より協調をどれだけ取るか。</span> </li><li> <strong> 情緒安定性（Neuroticism）
+</strong> <span>ストレスや否定的感情への反応しやすさ。本サイトでは反転し「情緒安定性」として表示する。</span> </li> </ul> <h2>診断の仕組み</h2> <p>
+各因子を10問ずつ、合計50問の5件法で測ります。各因子には「逆転項目」を半数入れており、すべて同じ強さで答えても極端な結果にならないよう、回答のクセ（とりあえず高め・低めに付ける傾向）を打ち消しています。スコアは各因子0〜100に変換し、似た性格傾向を持つ12の代表タイプのうち最も近いものを判定します。職業は、各職業で活躍しやすい人の性格プロファイルとの近さで並べています。
+</p> <h2>結果の読み方と限界</h2> <p>
+スコアは「一般の人と比べた偏差値」ではなく、<strong>あなたの回答の中での相対的な高さ</strong>です。心理検査としての標準化や規範データの整備は行っていないため、結果は<strong>自己理解のきっかけ</strong>として受け取ってください。性格は状況や経験で変わり得ますし、向いている仕事は性格だけで決まるものでもありません。本診断は、医療・心理判定・採用選考・合否判断の根拠には使用できません。
+</p> <h2>参考にした考え方</h2> <ul class="axis-list"> <li> <strong>Big Five / 5因子モデル</strong> <span>性格を開放性・誠実性・外向性・協調性・神経症傾向の5次元で捉える、性格心理学で広く使われる枠組み。</span> </li> <li> <strong>性格と職業の関連</strong> <span>外向性と対人・推進職、誠実性と管理・専門職、開放性と企画・研究・創造職などの関連が、職業研究で繰り返し報告されています。</span> </li> </ul> </article> </div> </section>  </main> <footer class="footer"> <div class="footer-inner"> <span>性格診断 — Big Five をもとにした自己理解のためのサンプル診断。</span> <nav class="header-nav" aria-label="フッターナビゲーション"> <a href="/job-site/about" aria-current="page">このサイトについて</a> <a href="/job-site/privacy">プライバシー</a> </nav> </div> </footer> <script>
+      (() => {
+        const storageKey = 'personality-quiz-theme';
+        const root = document.documentElement;
+        const media = window.matchMedia('(prefers-color-scheme: dark)');
+        const toggles = document.querySelectorAll('[data-theme-toggle]');
+
+        const effectiveTheme = () => {
+          if (root.dataset.theme === 'dark' || root.dataset.theme === 'light') {
+            return root.dataset.theme;
+          }
+          return media.matches ? 'dark' : 'light';
+        };
+
+        const syncToggles = () => {
+          const isDark = effectiveTheme() === 'dark';
+          const label = isDark ? 'ライトモードに切り替え' : 'ダークモードに切り替え';
+          toggles.forEach((toggle) => {
+            toggle.setAttribute('aria-label', label);
+            toggle.setAttribute('aria-pressed', String(isDark));
+            toggle.setAttribute('title', label);
+          });
+        };
+
+        toggles.forEach((toggle) => {
+          toggle.addEventListener('click', () => {
+            const nextTheme = effectiveTheme() === 'dark' ? 'light' : 'dark';
+            root.dataset.theme = nextTheme;
+
+            try {
+              localStorage.setItem(storageKey, nextTheme);
+            } catch {
+              /* Theme still applies for this page view if storage is unavailable. */
+            }
+
+            syncToggles();
+          });
+        });
+
+        media.addEventListener('change', syncToggles);
+        syncToggles();
+      })();
+    </script> </body> </html>
