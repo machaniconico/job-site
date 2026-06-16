@@ -15,12 +15,12 @@ const STORAGE_KEY = 'personality-quiz-v1';
 const PAGE_SIZE = 5;
 const TOTAL_PAGES = Math.ceil(QUESTIONS.length / PAGE_SIZE);
 
-const ANSWER_OPTIONS: { value: LikertValue; label: string }[] = [
-  { value: 1, label: '違う' },
-  { value: 2, label: 'やや違う' },
-  { value: 3, label: 'どちらとも' },
-  { value: 4, label: 'やや そう' },
-  { value: 5, label: 'そう' },
+const ANSWER_OPTIONS: { value: LikertValue; label: string; pole: string }[] = [
+  { value: 1, label: '違う', pole: 'neg2' },
+  { value: 2, label: 'やや違う', pole: 'neg1' },
+  { value: 3, label: 'どちらとも', pole: 'mid' },
+  { value: 4, label: 'やや そう', pole: 'pos1' },
+  { value: 5, label: 'そう', pole: 'pos2' },
 ];
 
 interface State {
@@ -98,6 +98,21 @@ function renderProgress(): void {
   if (bar) bar.style.width = `${pct}%`;
   const text = $('#progressText');
   if (text) text.textContent = `${count} / ${QUESTION_COUNT} 問`;
+  const encourage = $('#encourageText');
+  if (encourage) {
+    encourage.textContent =
+      pct === 0
+        ? 'リラックスして、直感で答えてね 🌱'
+        : pct < 25
+          ? 'いい調子！'
+          : pct < 50
+            ? 'その調子！もう少しで折り返し'
+            : pct < 75
+              ? '折り返し！半分こえたよ 🎉'
+              : pct < 100
+                ? 'もうすぐゴール！'
+                : 'ぜんぶそろった！結果を見てみよう ✨';
+  }
   const pageText = $('#pageText');
   if (pageText) pageText.textContent = `ページ ${state.page + 1} / ${TOTAL_PAGES}`;
 }
@@ -116,9 +131,10 @@ function renderQuestions(): void {
       const num = start + i + 1;
       const opts = ANSWER_OPTIONS.map((o) => {
         const checked = Number(state.answers[q.id]) === o.value ? 'checked' : '';
-        return `<label class="answer-option"><input type="radio" name="${esc(q.id)}" value="${o.value}" ${checked}><span class="option-number">${o.value}</span><span>${esc(o.label)}</span></label>`;
+        const inputId = `${q.id}-${o.value}`;
+        return `<div class="answer-choice"><input id="${esc(inputId)}" type="radio" name="${esc(q.id)}" value="${o.value}" ${checked} aria-label="${esc(o.label)}"><label class="answer-circle" for="${esc(inputId)}" data-pole="${esc(o.pole)}" aria-label="${esc(o.label)}"><span class="sr-only">${esc(o.label)}</span></label></div>`;
       }).join('');
-      return `<article class="question-card"><div class="question-meta"><span>Q${num}</span><span>${esc(FACTORS[q.factor].displayLabel)}</span></div><h3>${esc(q.text)}</h3><div class="answer-grid" role="group" aria-label="${esc(q.text)}">${opts}</div></article>`;
+      return `<article class="question-card"><div class="question-meta"><span>Q${num}</span><span>${esc(FACTORS[q.factor].displayLabel)}</span></div><h3>${esc(q.text)}</h3><fieldset class="answer-scale" role="radiogroup" aria-label="${esc(q.text)}"><legend class="sr-only">${esc(q.text)}</legend><div class="answer-guides" aria-hidden="true"><span>当てはまらない ←</span><span>→ 当てはまる</span></div><div class="answer-row">${opts}</div></fieldset></article>`;
     })
     .join('');
 

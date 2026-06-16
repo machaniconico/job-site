@@ -10,13 +10,13 @@ import { PERSONALITY_TYPES } from '../data/personalityTypes';
   <section class="hero">
     <div class="container hero-grid">
       <div>
-        <p class="eyebrow">Big Five personality test</p>
+        <p class="eyebrow">やさしい Big Five 性格診断</p>
         <h1>あなたの性格を測って、<br />強みと向いてる仕事まで。</h1>
         <p class="lead">
-          心理学で最も広く使われる Big Five（5因子）で性格を測定。{QUESTION_COUNT}問・約5分で、あなたのタイプ・5つの性格特性・性格に合った職業を提案します。
+          心理学で最も広く使われる Big Five（5因子）で性格を測定。{QUESTION_COUNT}問・約5分で、あなたのタイプ・5つの性格特性・性格に合った職業を提案します。途中でやめても大丈夫。回答はこの端末の中だけに保存されます。
         </p>
         <div class="hero-actions">
-          <button class="btn btn-primary" id="startBtn" type="button">診断を始める（{QUESTION_COUNT}問）</button>
+          <button class="btn btn-primary" id="startBtn" type="button">さっそく始める（{QUESTION_COUNT}問・約5分）</button>
           <button class="btn btn-secondary" id="resumeBtn" type="button" hidden>続きから</button>
           <button class="btn btn-ghost" id="resetBtn" type="button" hidden>回答をリセット</button>
         </div>
@@ -38,7 +38,7 @@ import { PERSONALITY_TYPES } from '../data/personalityTypes';
 
   <section class="section" id="methodology">
     <div class="container">
-      <p class="eyebrow">Methodology</p>
+      <p class="eyebrow">診断のしくみ</p>
       <h2>5つの性格因子（Big Five）</h2>
       <p class="lead">
         人の性格は、次の5つの大きな factor で説明できるとされています。各 factor を10問ずつ、逆転項目を入れて測ります。
@@ -61,12 +61,13 @@ import { PERSONALITY_TYPES } from '../data/personalityTypes';
   <section class="section" id="diagnosis" hidden>
     <div class="container">
       <div class="panel">
-        <p class="eyebrow">Questions</p>
+        <p class="eyebrow">質問タイム</p>
         <h2 id="pageTitle">診断</h2>
         <div class="progress-shell" aria-label="回答の進捗">
           <div class="progress-track" aria-hidden="true"><span class="progress-bar" id="progressBar"></span></div>
           <div class="progress-texts">
             <span id="progressText">0 / {QUESTION_COUNT} 問</span>
+            <span id="encourageText"></span>
             <span id="pageText"></span>
           </div>
         </div>
@@ -84,7 +85,7 @@ import { PERSONALITY_TYPES } from '../data/personalityTypes';
   <section class="section" id="result" hidden>
     <div class="container">
       <article class="panel">
-        <p class="eyebrow">Your result</p>
+        <p class="eyebrow">あなたの結果</p>
         <div id="typeHero"></div>
       </article>
       <article class="panel" style="margin-top: var(--space-5)">
@@ -93,7 +94,7 @@ import { PERSONALITY_TYPES } from '../data/personalityTypes';
         <p id="factorNote" style="font-size: var(--step--1); color: var(--color-text-mute); margin-top: var(--space-4)"></p>
       </article>
       <article class="panel" style="margin-top: var(--space-5)">
-        <p class="eyebrow">Careers</p>
+        <p class="eyebrow">あなたに合いそうな仕事</p>
         <h2>性格に合う仕事</h2>
         <p>
           あなたの5因子プロファイルと、各職業に向いた人の傾向との「近さ」で並べた相対的な候補です。資格・求人・収入・経験などは別途ご確認ください。
