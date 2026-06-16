@@ -24,6 +24,10 @@ const home = withBase('');
 
 const title = `${occupation.title}に向いている人の傾向 | 性格診断`;
 const description = `${occupation.title}（${occupation.category}）の仕事内容・活かせる強み・気をつけたい点と、活躍する人のBig Five傾向。${occupation.description}`;
+const ogImage = new URL(
+  withBase(`og/job/${occupation.id}.png`),
+  Astro.site ?? Astro.url.origin
+).toString();
 
 // 「この仕事で活躍する人の傾向」バー。N は displayScore で「情緒安定性」として反転表示する。
 const profileBars = FACTOR_DISPLAY_ORDER.map((key) => {
@@ -39,7 +43,7 @@ const profileBars = FACTOR_DISPLAY_ORDER.map((key) => {
 });
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} ogImage={ogImage}>
   <section class="section">
     <div class="container">
       <article class="panel">
