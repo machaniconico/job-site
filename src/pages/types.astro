@@ -1,0 +1,49 @@
+---
+import Base from '../layouts/Base.astro';
+import { PERSONALITY_TYPES, BALANCED_TYPE } from '../data/personalityTypes';
+import type { PersonalityType } from '../lib/types';
+
+const base = import.meta.env.BASE_URL;
+const withBase = (path: string) => `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+const home = withBase('');
+
+const allTypes: PersonalityType[] = [...PERSONALITY_TYPES, BALANCED_TYPE];
+
+const title = '性格タイプ一覧 | 性格診断';
+const description =
+  'Big Five をもとにした全21タイプの一覧。それぞれのアイコン・名前・一言キャッチから、気になるタイプの紹介ページへ進めます。あなた自身のタイプは50問・約5分の診断で分かります。';
+---
+
+<Base title={title} description={description}>
+  <section class="section">
+    <div class="container">
+      <article class="panel">
+        <p class="eyebrow">性格タイプ一覧</p>
+        <h1>21の性格タイプ</h1>
+        <p class="lead">
+          Big Five（5因子モデル）の傾向の組み合わせから生まれる、代表的な性格タイプの一覧です。気になるタイプを選んで、特徴・強み・向きやすい仕事を読んでみてください。
+        </p>
+        <p class="job-detail-note" style="margin-top: var(--space-3)">
+          ここはタイプ紹介の入口です。あなた自身のタイプは、50問・約5分の診断で分かります。
+        </p>
+        <div class="hero-actions" style="margin-top: var(--space-4)">
+          <a class="btn btn-primary" href={home}>診断をはじめる</a>
+        </div>
+      </article>
+
+      <div class="type-grid" style="margin-top: var(--space-5)">
+        {
+          allTypes.map((type) => (
+            <a class="type-grid-card" href={withBase(`type/${type.id}/`)}>
+              <span class="type-grid-icon" aria-hidden="true">
+                {type.icon}
+              </span>
+              <span class="type-grid-name">{type.name}</span>
+              <span class="type-grid-catch">{type.catch}</span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</Base>
