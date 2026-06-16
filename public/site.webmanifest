@@ -1,0 +1,18 @@
+{
+  "name": "性格診断 | Big Five であなたの強みと適職を知る",
+  "short_name": "性格診断",
+  "description": "Big Five で性格を測り、強みと向いてる仕事を提案する無料診断。",
+  "start_url": "/job-site/",
+  "scope": "/job-site/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "/job-site/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

@@ -65,8 +65,13 @@ const isCurrent = (href: string) => normalizePath(Astro.url.pathname) === normal
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#2563eb" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b1120" />
+    <meta name="apple-mobile-web-app-title" content="性格診断" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <link rel="canonical" href={Astro.url} />
     <link rel="icon" href={withBase('favicon.svg')} type="image/svg+xml" />
+    <link rel="manifest" href={withBase('site.webmanifest')} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
