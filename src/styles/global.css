@@ -396,6 +396,69 @@ a:hover {
   margin-top: var(--space-5);
 }
 
+/* ---------- preview cards (診断でわかること) ---------- */
+.preview-grid {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-5) 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+.preview-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-sm);
+}
+.preview-icon {
+  font-size: var(--step-3);
+  line-height: 1;
+}
+.preview-title {
+  margin: 0;
+  font-size: var(--step-1);
+  color: var(--color-text);
+}
+.preview-body {
+  margin: 0;
+  font-size: var(--step--1);
+  color: var(--color-text-soft);
+  line-height: var(--lh-prose);
+}
+
+/* ---------- explore CTA (タイプ/仕事を先に見る) ---------- */
+.explore-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  background: var(--color-accent-soft);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
+}
+.explore-text {
+  flex: 1 1 18rem;
+}
+.explore-text > h2 {
+  margin-bottom: var(--space-2);
+}
+.explore-text > p {
+  margin: 0;
+  color: var(--color-text-soft);
+}
+.explore-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
 /* ---------- progress ---------- */
 .progress-shell {
   margin-block: var(--space-4) var(--space-5);
