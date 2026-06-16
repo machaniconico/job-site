@@ -18,6 +18,7 @@ const withBase = (path: string) => `${base.replace(/\/$/, '')}/${path.replace(/^
 const home = withBase('');
 const aboutHref = withBase('about');
 const privacyHref = withBase('privacy');
+const ogImage = new URL(withBase('og.png'), Astro.site ?? Astro.url.origin).toString();
 const normalizePath = (path: string) => {
   const normalized = path.replace(/\/+$/, '');
   return normalized === '' ? '/' : normalized;
@@ -39,7 +40,9 @@ const isCurrent = (href: string) => normalizePath(Astro.url.pathname) === normal
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={Astro.url} />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImage} />
   </head>
   <body>
     <a class="skip-link" href="#main">本文へスキップ</a>

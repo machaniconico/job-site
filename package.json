@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "og": "node scripts/generate-og.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "test": "vitest run",
@@ -17,11 +18,12 @@
     "typecheck": "astro check"
   },
   "dependencies": {
-    "astro": "^6.0.8",
-    "@astrojs/sitemap": "^3.7.1"
+    "@astrojs/sitemap": "^3.7.1",
+    "astro": "^6.0.8"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
+    "sharp": "^0.35.1",
     "typescript": "^5.7.3",
     "vitest": "^3.2.4"
   }

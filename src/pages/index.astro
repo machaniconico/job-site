@@ -11,7 +11,7 @@ import { PERSONALITY_TYPES } from '../data/personalityTypes';
     <div class="container hero-grid">
       <div>
         <p class="eyebrow">やさしい Big Five 性格診断</p>
-        <h1>あなたの性格を測って、<br />強みと向いてる仕事まで。</h1>
+        <h1>あなたの性格を測って、<br /><span class="hero-title-accent">強みと向いてる仕事</span>まで。</h1>
         <p class="lead">
           心理学で最も広く使われる Big Five（5因子）で性格を測定。{QUESTION_COUNT}問・約5分で、あなたのタイプ・5つの性格特性・性格に合った職業を提案します。途中でやめても大丈夫。回答はこの端末の中だけに保存されます。
         </p>
@@ -27,10 +27,10 @@ import { PERSONALITY_TYPES } from '../data/personalityTypes';
       <aside class="stat-card" aria-label="診断の概要">
         <p class="eyebrow">この診断について</p>
         <div class="stat-grid">
-          <div><strong>{QUESTION_COUNT}</strong><span>設問</span></div>
-          <div><strong>5</strong><span>性格因子</span></div>
-          <div><strong>{PERSONALITY_TYPES.length}</strong><span>タイプ</span></div>
-          <div><strong>{OCCUPATIONS.length}</strong><span>職業候補</span></div>
+          <div><span class="stat-value"><span class="stat-icon" aria-hidden="true">📝</span><strong>{QUESTION_COUNT}</strong></span><span>設問</span></div>
+          <div><span class="stat-value"><span class="stat-icon" aria-hidden="true">🧭</span><strong>5</strong></span><span>性格因子</span></div>
+          <div><span class="stat-value"><span class="stat-icon" aria-hidden="true">✨</span><strong>{PERSONALITY_TYPES.length}</strong></span><span>タイプ</span></div>
+          <div><span class="stat-value"><span class="stat-icon" aria-hidden="true">💼</span><strong>{OCCUPATIONS.length}</strong></span><span>職業候補</span></div>
         </div>
       </aside>
     </div>

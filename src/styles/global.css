@@ -32,7 +32,9 @@ html {
 
 body {
   margin: 0;
-  background: var(--color-bg);
+  background-color: var(--color-bg);
+  background-image: var(--bg-wash);
+  background-attachment: fixed;
   color: var(--color-text);
   font-family: var(--font-sans);
   font-size: var(--step-0);
@@ -253,6 +255,18 @@ a:hover {
   gap: var(--space-7);
   align-items: center;
 }
+.hero-title-accent {
+  color: var(--color-primary);
+}
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .hero-title-accent {
+    background-image: var(--gradient-hero);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+}
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
@@ -268,10 +282,11 @@ a:hover {
   color: var(--color-text-soft);
 }
 .stat-card {
-  background: var(--color-surface-alt);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--color-surface) 0%, color-mix(in srgb, var(--color-surface) 88%, var(--warm) 12%) 100%);
+  border: 1px solid color-mix(in srgb, var(--color-border) 82%, var(--warm) 18%);
+  border-radius: var(--radius-2xl);
   padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
 }
 .stat-grid {
   display: grid;
@@ -281,6 +296,15 @@ a:hover {
 .stat-grid > div {
   display: flex;
   flex-direction: column;
+  gap: var(--space-1);
+}
+.stat-value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+.stat-icon {
+  font-size: var(--step-0);
 }
 .stat-grid strong {
   font-size: var(--step-3);
@@ -621,6 +645,7 @@ a:hover {
   font-size: var(--step-2);
 }
 .score-gauge {
+  --p: 0;
   width: 40px;
   height: 40px;
   flex: 0 0 auto;
@@ -783,7 +808,8 @@ a:hover {
     display: none !important;
   }
   body {
-    background: #fff;
+    background-color: #fff;
+    background-image: none;
   }
   .panel {
     box-shadow: none;
