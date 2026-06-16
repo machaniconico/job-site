@@ -1,7 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { QUESTIONS } from '../data/questions';
 import { computeProfile } from './scoring';
-import { determineType, rankTypes, fitForType, BALANCED_FALLBACK_THRESHOLD } from './typing';
+import {
+  determineType,
+  rankTypes,
+  fitForType,
+  expectedScoresFromPattern,
+  BALANCED_FALLBACK_THRESHOLD,
+} from './typing';
 import { PERSONALITY_TYPES, BALANCED_TYPE } from '../data/personalityTypes';
 import { OCCUPATIONS } from '../data/occupations';
 import { FACTOR_KEYS } from './types';
@@ -108,6 +114,23 @@ describe('determineType', () => {
     expect(ranked).toHaveLength(20);
     for (let i = 1; i < ranked.length; i++) {
       expect(ranked[i - 1].fitScore).toBeGreaterThanOrEqual(ranked[i].fitScore);
+    }
+  });
+});
+
+describe('expectedScoresFromPattern', () => {
+  it('maps high→75, low→25, unspecified→50', () => {
+    const scores = expectedScoresFromPattern({ O: 'high', C: 'low' });
+    expect(scores.O).toBe(75);
+    expect(scores.C).toBe(25);
+    expect(scores.E).toBe(50);
+    expect(scores.A).toBe(50);
+    expect(scores.N).toBe(50);
+  });
+  it('fills every factor key (balanced pattern is all 50)', () => {
+    const scores = expectedScoresFromPattern({});
+    for (const k of FACTOR_KEYS) {
+      expect(scores[k]).toBe(50);
     }
   });
 });

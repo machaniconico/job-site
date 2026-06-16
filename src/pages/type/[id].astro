@@ -5,8 +5,8 @@ import { OCCUPATIONS } from '../../data/occupations';
 import { FACTORS, FACTOR_DISPLAY_ORDER } from '../../data/dimensions';
 import { rankOccupations } from '../../lib/matching';
 import { displayScore } from '../../lib/scoring';
-import { FACTOR_KEYS } from '../../lib/types';
-import type { FactorKey, FactorScores, PersonalityType, Profile } from '../../lib/types';
+import { expectedScoresFromPattern } from '../../lib/typing';
+import type { FactorKey, PersonalityType, Profile } from '../../lib/types';
 
 export function getStaticPaths() {
   const all: PersonalityType[] = [...PERSONALITY_TYPES, BALANCED_TYPE];
@@ -33,20 +33,7 @@ const ogImage = new URL(withBase(`og/${type.id}.png`), Astro.site ?? Astro.url.o
 // ---- 期待プロファイル導出 ----
 // pattern の指定（high/low）から、このタイプに「表れやすい」期待 Big Five を作る。
 // high→75 / low→25 / 指定なし→50。バランス型（pattern={}）は全 50 になる。
-const EXPECTED_HIGH = 75;
-const EXPECTED_LOW = 25;
-const EXPECTED_MID = 50;
-
-function expectedScores(pattern: PersonalityType['pattern']): FactorScores {
-  const scores = {} as FactorScores;
-  for (const key of FACTOR_KEYS) {
-    const want = pattern[key];
-    scores[key] = want === 'high' ? EXPECTED_HIGH : want === 'low' ? EXPECTED_LOW : EXPECTED_MID;
-  }
-  return scores;
-}
-
-const expected = expectedScores(type.pattern);
+const expected = expectedScoresFromPattern(type.pattern);
 // pattern で方向が指定された因子が一つでもあるか（バランス型は false）。
 const hasDirection = Object.keys(type.pattern).length > 0;
 

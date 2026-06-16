@@ -7,7 +7,7 @@ import { QUESTIONS, QUESTION_COUNT } from '../data/questions';
 import { FACTORS, FACTOR_DISPLAY_ORDER } from '../data/dimensions';
 import { OCCUPATIONS } from '../data/occupations';
 import { computeProfile, computeFacetScores, displayScore } from '../lib/scoring';
-import { determineType, topTypes } from '../lib/typing';
+import { determineType, topTypes, expectedScoresFromPattern } from '../lib/typing';
 import { rankOccupations } from '../lib/matching';
 import { createShareCardBlob } from './shareImage';
 import type {
@@ -69,9 +69,6 @@ const state: State = { answers: {}, page: 0 };
 let lastProfile: Profile | null = null;
 let lastType: PersonalityType | null = null;
 let lastJobs: OccupationMatch[] = [];
-let lastTypeName = '';
-let lastTypeIcon = '';
-let lastTypeId = '';
 
 function $<T extends HTMLElement = HTMLElement>(sel: string): T | null {
   return document.querySelector(sel);
@@ -116,9 +113,6 @@ function clearAll(): void {
   lastProfile = null;
   lastType = null;
   lastJobs = [];
-  lastTypeName = '';
-  lastTypeIcon = '';
-  lastTypeId = '';
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch {
@@ -133,16 +127,20 @@ function scrollToSel(sel: string): void {
   $(sel)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-/** タイプ別ページの絶対URL（location.origin + BASE_URL 正規化 + type/<id>/）。 */
-function typePageUrl(typeId: string): string {
+/** 詳細ページの絶対URL（location.origin + BASE_URL 正規化 + /<segment>/<id>/）。 */
+function pageUrl(segment: string, id: string): string {
   const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
-  return `${location.origin}${base}/type/${typeId}/`;
+  return `${location.origin}${base}/${segment}/${id}/`;
 }
 
-/** 職業詳細ページの絶対URL（location.origin + BASE_URL 正規化 + job/<id>/）。 */
+/** タイプ別ページの絶対URL。 */
+function typePageUrl(typeId: string): string {
+  return pageUrl('type', typeId);
+}
+
+/** 職業詳細ページの絶対URL。 */
 function jobPageUrl(jobId: string): string {
-  const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
-  return `${location.origin}${base}/job/${jobId}/`;
+  return pageUrl('job', jobId);
 }
 
 function prefersReducedMotion(): boolean {
@@ -179,20 +177,6 @@ function animateResultNumbers(): void {
     if (!Number.isFinite(target)) return;
     animateIntegerText(el, target);
   });
-}
-
-/**
- * タイプの pattern から「そのタイプに表れやすい素の FactorScores」を導く。
- * 規則は Iter10 タイプページと同一: high→75 / low→25 / 指定なし→50。
- * 返すのは素スコア（N が高い=神経症傾向が強い）。表示時は displayScore で反転される。
- */
-function expectedScoresFromPattern(type: PersonalityType): FactorScores {
-  const scores = {} as FactorScores;
-  for (const k of FACTOR_DISPLAY_ORDER) {
-    const want = type.pattern[k];
-    scores[k] = want === 'high' ? 75 : want === 'low' ? 25 : 50;
-  }
-  return scores;
 }
 
 /**
@@ -258,7 +242,7 @@ function renderFactorChart(profile: Profile, typeExpected?: FactorScores): strin
   // ユーザー塗り（var(--color-primary)）と視覚的に区別する。grid と axes の上、ユーザーの下に置く。
   const expectedPolygon =
     typeExpected != null
-      ? `<polygon class="factor-chart-expected" points="${factors.map((f) => `${f.ex.toFixed(1)},${f.ey.toFixed(1)}`).join(' ')}" fill="none" stroke="var(--color-text-soft)" stroke-width="1.75" stroke-dasharray="5 4" stroke-linejoin="round" />`
+      ? `<polygon points="${factors.map((f) => `${f.ex.toFixed(1)},${f.ey.toFixed(1)}`).join(' ')}" fill="none" stroke="var(--color-text-soft)" stroke-width="1.75" stroke-dasharray="5 4" stroke-linejoin="round" />`
       : '';
 
   const youAria = factors.map((f) => `${f.label} ${f.score}`).join('、');
@@ -295,7 +279,7 @@ function renderNearbyTypes(profile: Profile, mainTypeId: string, mainTypeName: s
     .map((match) => {
       const t = match.type;
       const fit = Math.round(match.fitScore);
-      return `<li class="nearby-card"><a class="nearby-link" href="${esc(typePageUrl(t.id))}"><span class="nearby-icon" aria-hidden="true">${esc(t.icon)}</span><span class="nearby-body"><span class="nearby-name">${esc(t.name)}</span><span class="nearby-catch">${esc(t.catch)}</span></span><span class="nearby-fit"><strong>${fit}</strong><span>% フィット</span></span></a></li>`;
+      return `<li><a class="nearby-link" href="${esc(typePageUrl(t.id))}"><span class="nearby-icon" aria-hidden="true">${esc(t.icon)}</span><span class="nearby-body"><span class="nearby-name">${esc(t.name)}</span><span class="nearby-catch">${esc(t.catch)}</span></span><span class="nearby-fit"><strong>${fit}</strong><span>% フィット</span></span></a></li>`;
     })
     .join('');
 
@@ -451,9 +435,6 @@ function renderResult(): void {
   lastProfile = profile;
   lastType = typeMatch.type;
   lastJobs = jobs;
-  lastTypeName = typeMatch.type.name;
-  lastTypeIcon = typeMatch.type.icon;
-  lastTypeId = typeMatch.type.id;
 
   const hero = $('#typeHero');
   if (hero) {
@@ -471,7 +452,7 @@ function renderResult(): void {
     // BALANCED（pattern={}→全50）は情報量が乏しいので典型を重ねない。
     // それ以外の判定タイプは pattern から期待プロファイルを導いて2系列目に重ねる。
     const overlayType = typeMatch.type.id !== 'balanced';
-    const expected = overlayType ? expectedScoresFromPattern(typeMatch.type) : undefined;
+    const expected = overlayType ? expectedScoresFromPattern(typeMatch.type.pattern) : undefined;
     chart.innerHTML = renderFactorChart(profile, expected) + renderFactorLegend(overlayType ? typeMatch.type.name : undefined);
   }
 
@@ -518,7 +499,7 @@ function summaryText(): string {
   const lines = FACTOR_DISPLAY_ORDER.map(
     (k) => `${FACTORS[k].displayLabel}: ${Math.round(displayScore(lastProfile!.scores[k], FACTORS[k].inverted))}`,
   );
-  return [`私の性格タイプは「${lastTypeIcon} ${lastTypeName}」でした！`, '', ...lines, '', '#性格診断'].join('\n');
+  return [`私の性格タイプは「${lastType?.icon ?? ''} ${lastType?.name ?? ''}」でした！`, '', ...lines, '', '#性格診断'].join('\n');
 }
 
 function downloadBlob(blob: Blob, filename: string): void {
@@ -592,7 +573,7 @@ function init(): void {
   });
   $('#shareBtn')?.addEventListener('click', () => {
     // 結果タイプの型ページURLを共有する（未判定時はトップURLにフォールバック）。
-    const url = lastTypeId ? typePageUrl(lastTypeId) : location.href.split('#')[0];
+    const url = lastType ? typePageUrl(lastType.id) : location.href.split('#')[0];
     const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(summaryText())}&url=${encodeURIComponent(url)}`;
     window.open(intent, '_blank', 'noopener');
   });
@@ -622,7 +603,7 @@ function init(): void {
   });
   $('#jsonBtn')?.addEventListener('click', () => {
     if (!lastProfile) return;
-    const payload = { type: lastTypeName, profile: lastProfile, answers: state.answers };
+    const payload = { type: lastType?.name, profile: lastProfile, answers: state.answers };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     downloadBlob(blob, `personality-result-${new Date().toISOString().slice(0, 10)}.json`);
   });

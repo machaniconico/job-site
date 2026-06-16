@@ -1,8 +1,23 @@
+import { FACTOR_KEYS } from './types';
 import type { FactorKey, FactorScores, PersonalityType, Profile, TypeMatch } from './types';
 import { PERSONALITY_TYPES, BALANCED_TYPE } from '../data/personalityTypes';
 
 /** 最良タイプの適合度がこの値未満なら、特徴が弱いとみなしてバランス型に倒す。 */
 export const BALANCED_FALLBACK_THRESHOLD = 62;
+
+/**
+ * タイプの pattern から「そのタイプに表れやすい素の FactorScores」を導く。
+ * 規則: high→75 / low→25 / 指定なし→50。返すのは素スコア（N が高い=神経症傾向が強い）。
+ * 表示時は displayScore で反転される。バランス型（pattern={}）は全 50 になる。
+ */
+export function expectedScoresFromPattern(pattern: PersonalityType['pattern']): FactorScores {
+  const scores = {} as FactorScores;
+  for (const key of FACTOR_KEYS) {
+    const want = pattern[key];
+    scores[key] = want === 'high' ? 75 : want === 'low' ? 25 : 50;
+  }
+  return scores;
+}
 
 function round1(value: number): number {
   return Math.round(value * 10) / 10;
