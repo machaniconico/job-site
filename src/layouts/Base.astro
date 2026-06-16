@@ -24,6 +24,15 @@ const jobsHref = withBase('jobs');
 const aboutHref = withBase('about');
 const privacyHref = withBase('privacy');
 const ogImage = ogImageProp ?? new URL(withBase('og.png'), Astro.site ?? Astro.url.origin).toString();
+const siteUrl = new URL(withBase(''), Astro.site ?? Astro.url.origin).toString();
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: '性格診断 | Big Five',
+  url: siteUrl,
+  description,
+  inLanguage: 'ja',
+};
 const normalizePath = (path: string) => {
   const normalized = path.replace(/\/+$/, '');
   return normalized === '' ? '/' : normalized;
@@ -65,6 +74,7 @@ const isCurrent = (href: string) => normalizePath(Astro.url.pathname) === normal
     <meta property="og:image" content={ogImage} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImage} />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')}></script>
   </head>
   <body>
     <a class="skip-link" href="#main">本文へスキップ</a>
