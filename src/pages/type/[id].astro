@@ -1,7 +1,12 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { PERSONALITY_TYPES, BALANCED_TYPE } from '../../data/personalityTypes';
-import type { PersonalityType } from '../../lib/types';
+import { OCCUPATIONS } from '../../data/occupations';
+import { FACTORS, FACTOR_DISPLAY_ORDER } from '../../data/dimensions';
+import { rankOccupations } from '../../lib/matching';
+import { displayScore } from '../../lib/scoring';
+import { FACTOR_KEYS } from '../../lib/types';
+import type { FactorKey, FactorScores, PersonalityType, Profile } from '../../lib/types';
 
 export function getStaticPaths() {
   const all: PersonalityType[] = [...PERSONALITY_TYPES, BALANCED_TYPE];
@@ -24,6 +29,68 @@ const home = withBase('');
 const title = `${type.name}（${type.catch}）| 性格診断`;
 const description = `${type.name}タイプの特徴・強み・気をつけたい点。${type.summary}`;
 const ogImage = new URL(withBase(`og/${type.id}.png`), Astro.site ?? Astro.url.origin).toString();
+
+// ---- 期待プロファイル導出 ----
+// pattern の指定（high/low）から、このタイプに「表れやすい」期待 Big Five を作る。
+// high→75 / low→25 / 指定なし→50。バランス型（pattern={}）は全 50 になる。
+const EXPECTED_HIGH = 75;
+const EXPECTED_LOW = 25;
+const EXPECTED_MID = 50;
+
+function expectedScores(pattern: PersonalityType['pattern']): FactorScores {
+  const scores = {} as FactorScores;
+  for (const key of FACTOR_KEYS) {
+    const want = pattern[key];
+    scores[key] = want === 'high' ? EXPECTED_HIGH : want === 'low' ? EXPECTED_LOW : EXPECTED_MID;
+  }
+  return scores;
+}
+
+const expected = expectedScores(type.pattern);
+// pattern で方向が指定された因子が一つでもあるか（バランス型は false）。
+const hasDirection = Object.keys(type.pattern).length > 0;
+
+// 【A】表れやすい傾向の5因子バー。N は displayScore で「情緒安定性」として反転表示。
+const tendencyBars = FACTOR_DISPLAY_ORDER.map((key) => {
+  const factor = FACTORS[key];
+  return {
+    key,
+    displayLabel: factor.displayLabel,
+    englishName: factor.englishName,
+    inverted: factor.inverted,
+    value: displayScore(expected[key], factor.inverted),
+  };
+});
+
+// 【B】向きやすい仕事 TOP5。
+// rankOccupations / matchScore / buildMatchReasons / levelOf は profile.scores しか参照しないため、
+// 他フィールドはダミーで Profile 互換オブジェクトを作る。
+const profileLike: Profile = {
+  scores: expected,
+  levels: { O: 'mid', C: 'mid', E: 'mid', A: 'mid', N: 'mid' },
+  answeredCount: 0,
+  totalQuestions: 0,
+  completionRate: 0,
+  confidence: '低',
+  confidenceReason: '',
+  generatedAt: '',
+};
+const topJobs = rankOccupations(OCCUPATIONS, profileLike).slice(0, 5);
+
+// 【C】近いタイプ。pattern の「同じ factor が同じ level」の重なり数で近さを測る。
+function patternOverlap(a: PersonalityType['pattern'], b: PersonalityType['pattern']): number {
+  let count = 0;
+  for (const key of Object.keys(a) as FactorKey[]) {
+    if (a[key] !== undefined && a[key] === b[key]) count += 1;
+  }
+  return count;
+}
+
+const relatedTypes = PERSONALITY_TYPES.filter((other) => other.id !== type.id)
+  .map((other) => ({ other, overlap: patternOverlap(type.pattern, other.pattern) }))
+  .filter((entry) => entry.overlap > 0)
+  .sort((a, b) => b.overlap - a.overlap || a.other.id.localeCompare(b.other.id))
+  .slice(0, 3);
 ---
 
 <Base title={title} description={description} ogImage={ogImage}>
@@ -62,6 +129,92 @@ const ogImage = new URL(withBase(`og/${type.id}.png`), Astro.site ?? Astro.url.o
           このページはタイプ紹介です。あなた自身のタイプは、50問・約5分の診断で分かります。
         </p>
       </article>
+
+      <article class="panel" style="margin-top: var(--space-5)">
+        <p class="eyebrow">このタイプに表れやすい傾向</p>
+        <p class="job-detail-note">
+          {
+            hasDirection
+              ? 'このタイプらしさを Big Five（5因子）でみたときの、表れやすい傾向の目安です。実際の測定値ではなく、タイプの方向性を表したものです。'
+              : 'バランス型は特定の方向に偏らないタイプです。下のバーはどの因子もおおよそ中央に並びます（測定値ではなく傾向の目安です）。'
+          }
+        </p>
+        <div class="bars">
+          {
+            tendencyBars.map((bar) => (
+              <>
+                <div class="bar-row">
+                  <span class="bar-label">
+                    {bar.displayLabel}
+                    <small>{bar.englishName}</small>
+                  </span>
+                  <span class="bar-track">
+                    <span style={`width: ${bar.value}%`} />
+                  </span>
+                  <span class="bar-value">{bar.value}</span>
+                </div>
+                {bar.inverted && (
+                  <p class="bar-daily">
+                    ※「情緒安定性」は神経症傾向を反転した表示です。高いほど、プレッシャーの中でも落ち着きを保ちやすい傾向。
+                  </p>
+                )}
+              </>
+            ))
+          }
+        </div>
+      </article>
+
+      <article class="panel" style="margin-top: var(--space-5)">
+        <p class="eyebrow">このタイプに向きやすい仕事 TOP5</p>
+        <p class="job-detail-note">
+          {
+            hasDirection
+              ? '表れやすい傾向に基づく、相性の目安です。マッチ度はあくまで参考で、当てはまらなくても活躍できます。'
+              : 'バランス型は特定の方向に偏らないため、幅広い仕事と相性を取りやすいタイプです。下は中央寄りのプロファイルに近い順の参考で、マッチ度はあくまで目安です。'
+          }
+        </p>
+        <div class="type-jobs">
+          {
+            topJobs.map((job, i) => (
+              <a class="type-job-card" href={withBase(`job/${job.id}/`)}>
+                <span class={`rank-medal ${i < 3 ? `rank-${i + 1}` : 'rank-other'}`}>{i + 1}</span>
+                <span class="type-job-body">
+                  <span class="job-category">{job.category}</span>
+                  <span class="type-job-title">{job.title}</span>
+                </span>
+                <span class="match-score">
+                  <strong>{job.matchScore}</strong>
+                  <span>%</span>
+                </span>
+              </a>
+            ))
+          }
+        </div>
+      </article>
+
+      {
+        relatedTypes.length > 0 && (
+          <article class="panel" style="margin-top: var(--space-5)">
+            <p class="eyebrow">近いタイプ</p>
+            <p class="job-detail-note">
+              特徴の方向性が重なる、近い雰囲気のタイプです。読み比べてみてください。
+            </p>
+            <div class="type-related">
+              {relatedTypes.map((entry) => (
+                <a class="type-related-card" href={withBase(`type/${entry.other.id}/`)}>
+                  <span class="type-related-icon" aria-hidden="true">
+                    {entry.other.icon}
+                  </span>
+                  <span class="type-related-body">
+                    <span class="type-related-name">{entry.other.name}</span>
+                    <span class="type-related-catch">{entry.other.catch}</span>
+                  </span>
+                </a>
+              ))}
+            </div>
+          </article>
+        )
+      }
     </div>
   </section>
 </Base>

@@ -924,6 +924,80 @@ a:hover {
   font-weight: 700;
 }
 
+/* ---------- type detail: 向きやすい仕事 / 近いタイプ ---------- */
+.type-jobs {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+.type-job-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: box-shadow var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.type-job-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.type-job-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.type-job-title {
+  font-weight: 700;
+  font-size: var(--step-0);
+}
+.type-related {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+.type-related-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: box-shadow var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.type-related-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.type-related-icon {
+  font-size: var(--step-3);
+  line-height: 1;
+}
+.type-related-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.type-related-name {
+  font-weight: 700;
+  font-size: var(--step-0);
+}
+.type-related-catch {
+  font-size: var(--step--1);
+  color: var(--color-text-soft);
+}
+
 @media (prefers-reduced-motion: no-preference) {
   @keyframes fade-up {
     from {
