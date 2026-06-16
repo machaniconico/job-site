@@ -9,7 +9,8 @@ import { OCCUPATIONS } from '../data/occupations';
 import { computeProfile, displayScore } from '../lib/scoring';
 import { determineType } from '../lib/typing';
 import { rankOccupations } from '../lib/matching';
-import type { Answers, LikertValue, Profile } from '../lib/types';
+import { createShareCardBlob } from './shareImage';
+import type { Answers, LikertValue, OccupationMatch, PersonalityType, Profile } from '../lib/types';
 
 const STORAGE_KEY = 'personality-quiz-v1';
 const PAGE_SIZE = 5;
@@ -30,6 +31,8 @@ interface State {
 const state: State = { answers: {}, page: 0 };
 
 let lastProfile: Profile | null = null;
+let lastType: PersonalityType | null = null;
+let lastJobs: OccupationMatch[] = [];
 let lastTypeName = '';
 let lastTypeIcon = '';
 
@@ -74,6 +77,8 @@ function clearAll(): void {
   state.answers = {};
   state.page = 0;
   lastProfile = null;
+  lastType = null;
+  lastJobs = [];
   lastTypeName = '';
   lastTypeIcon = '';
   try {
@@ -291,6 +296,8 @@ function renderResult(): void {
   const typeMatch = determineType(profile);
   const jobs = rankOccupations(OCCUPATIONS, profile).slice(0, 8);
   lastProfile = profile;
+  lastType = typeMatch.type;
+  lastJobs = jobs;
   lastTypeName = typeMatch.type.name;
   lastTypeIcon = typeMatch.type.icon;
 
@@ -346,6 +353,18 @@ function summaryText(): string {
     (k) => `${FACTORS[k].displayLabel}: ${Math.round(displayScore(lastProfile!.scores[k], FACTORS[k].inverted))}`,
   );
   return [`私の性格タイプは「${lastTypeIcon} ${lastTypeName}」でした！`, '', ...lines, '', '#性格診断'].join('\n');
+}
+
+function downloadBlob(blob: Blob, filename: string): void {
+  const objectUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = objectUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  // 大きな Blob（PNG など）で同期 revoke するとダウンロードが中断する環境があるため次tickで解放する。
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
 }
 
 function init(): void {
@@ -410,18 +429,35 @@ function init(): void {
     const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(summaryText())}&url=${encodeURIComponent(url)}`;
     window.open(intent, '_blank', 'noopener');
   });
+  $('#saveImageBtn')?.addEventListener('click', async () => {
+    if (!lastProfile || !lastType) return;
+    const btn = $<HTMLButtonElement>('#saveImageBtn');
+    // 生成中の二重クリックでラベルが固着しないよう、処理中はボタンを無効化する。
+    if (btn?.disabled) return;
+    const original = btn?.textContent ?? '';
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '画像を生成中...';
+      btn.setAttribute('aria-busy', 'true');
+    }
+    try {
+      const blob = await createShareCardBlob(lastProfile, lastType, lastJobs);
+      downloadBlob(blob, `personality-result-${new Date().toISOString().slice(0, 10)}.png`);
+    } catch {
+      alert('画像の保存に失敗しました。お使いのブラウザの設定をご確認ください。');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = original;
+        btn.removeAttribute('aria-busy');
+      }
+    }
+  });
   $('#jsonBtn')?.addEventListener('click', () => {
     if (!lastProfile) return;
     const payload = { type: lastTypeName, profile: lastProfile, answers: state.answers };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    const objectUrl = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = objectUrl;
-    a.download = `personality-result-${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(objectUrl);
+    downloadBlob(blob, `personality-result-${new Date().toISOString().slice(0, 10)}.json`);
   });
 }
 

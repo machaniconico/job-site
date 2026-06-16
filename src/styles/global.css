@@ -773,14 +773,25 @@ a:hover {
     }
   }
 
-  @keyframes pop-in {
+  @keyframes result-rise-in {
     from {
       opacity: 0;
-      transform: scale(0);
+      transform: translateY(0.625rem);
     }
     to {
       opacity: 1;
-      transform: scale(1);
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
     }
   }
 
@@ -811,26 +822,52 @@ a:hover {
     animation-delay: 0.2s;
   }
   #result:not([hidden]) .panel {
-    animation: fade-up 0.35s var(--ease-out) both;
+    animation: result-rise-in 0.34s var(--ease-out) backwards;
   }
   #result:not([hidden]) .panel:nth-of-type(2) {
-    animation-delay: 0.05s;
+    animation-delay: 0.06s;
   }
   #result:not([hidden]) .panel:nth-of-type(3) {
-    animation-delay: 0.1s;
+    animation-delay: 0.12s;
   }
   #result:not([hidden]) .type-icon {
-    animation: pop-in 0.42s cubic-bezier(0.2, 1.35, 0.3, 1) both;
+    animation: pop-in 0.32s var(--ease-out) backwards;
   }
-  .factor-chart svg polygon {
-    animation: factor-polygon-in 0.5s var(--ease-out) both;
+  #result:not([hidden]) .bar-row,
+  #result:not([hidden]) .job-card {
+    animation: result-rise-in 0.3s var(--ease-out) backwards;
+  }
+  #result:not([hidden]) .bar-row:nth-of-type(2),
+  #result:not([hidden]) .job-card:nth-child(2) {
+    animation-delay: 0.06s;
+  }
+  #result:not([hidden]) .bar-row:nth-of-type(3),
+  #result:not([hidden]) .job-card:nth-child(3) {
+    animation-delay: 0.12s;
+  }
+  #result:not([hidden]) .bar-row:nth-of-type(4),
+  #result:not([hidden]) .job-card:nth-child(4) {
+    animation-delay: 0.18s;
+  }
+  #result:not([hidden]) .bar-row:nth-of-type(5),
+  #result:not([hidden]) .job-card:nth-child(5) {
+    animation-delay: 0.24s;
+  }
+  #result:not([hidden]) .factor-chart svg polygon {
+    animation: factor-polygon-in 0.38s var(--ease-out) 0.12s backwards;
     transform-box: fill-box;
     transform-origin: center;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .factor-chart svg polygon {
+  #result:not([hidden]) .panel,
+  #result:not([hidden]) .bar-row,
+  #result:not([hidden]) .job-card,
+  #result:not([hidden]) .type-icon,
+  #result:not([hidden]) .factor-chart svg polygon {
+    opacity: 1;
+    transform: none;
     animation: none;
   }
 }
