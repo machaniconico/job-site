@@ -23,11 +23,17 @@ const facetSamples: { key: (typeof FACTOR_DISPLAY_ORDER)[number]; examples: stri
   { key: 'A', examples: '思いやり／協調（譲り合い）' },
   { key: 'N', examples: '不安／情緒の揺れ／落ち着き' },
 ];
+
+const breadcrumbs = [
+  { name: 'ホーム', href: withBase('') },
+  { name: 'このサイトについて', href: withBase('about/') },
+];
 ---
 
 <Base
   title="このサイトについて | 性格診断"
   description="この性格診断が使っている Big Five モデル、診断の仕組み、結果の読み方と限界について。"
+  breadcrumbs={breadcrumbs}
 >
   <section class="section">
     <div class="container">

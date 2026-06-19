@@ -1,10 +1,19 @@
 ---
 import Base from '../layouts/Base.astro';
+
+const base = import.meta.env.BASE_URL;
+const withBase = (path: string) => `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+
+const breadcrumbs = [
+  { name: 'ホーム', href: withBase('') },
+  { name: 'プライバシーポリシー', href: withBase('privacy/') },
+];
 ---
 
 <Base
   title="プライバシーポリシー | 性格診断"
   description="この性格診断における回答データの取り扱いについて。回答はブラウザ内にのみ保存され、サーバーへ送信されません。"
+  breadcrumbs={breadcrumbs}
 >
   <section class="section">
     <div class="container">

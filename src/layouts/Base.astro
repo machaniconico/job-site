@@ -1,18 +1,22 @@
 ---
 import '../styles/tokens.css';
 import '../styles/global.css';
+import { breadcrumbListJsonLd, type Breadcrumb } from '../lib/breadcrumbs';
 
 interface Props {
   title?: string;
   description?: string;
   /** OGP/Twitter 画像の絶対URL。省略時は既定の og.png（後方互換）。 */
   ogImage?: string;
+  /** パンくず（ホーム→…→現在ページ）。省略時は表示・構造化データとも出力しない。 */
+  breadcrumbs?: Breadcrumb[];
 }
 
 const {
   title = '性格診断 | Big Five であなたの強みと適職を知る',
   description = 'Big Five（5因子モデル）で性格を測定し、あなたのタイプ・5つの性格特性・性格に合った職業を提案する無料の性格診断。50問・約5分、回答はすべてブラウザ内で完結します。',
   ogImage: ogImageProp,
+  breadcrumbs,
 } = Astro.props;
 
 const base = import.meta.env.BASE_URL;
@@ -33,6 +37,17 @@ const jsonLd = {
   description,
   inLanguage: 'ja',
 };
+const crumbs = breadcrumbs ?? [];
+const origin = Astro.site ?? Astro.url.origin;
+const breadcrumbJsonLd =
+  crumbs.length > 0
+    ? breadcrumbListJsonLd(
+        crumbs.map((crumb) => ({
+          name: crumb.name,
+          url: new URL(crumb.href, origin).toString(),
+        }))
+      )
+    : null;
 const normalizePath = (path: string) => {
   const normalized = path.replace(/\/+$/, '');
   return normalized === '' ? '/' : normalized;
@@ -80,6 +95,15 @@ const isCurrent = (href: string) => normalizePath(Astro.url.pathname) === normal
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImage} />
     <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')}></script>
+    {
+      breadcrumbJsonLd && (
+        <script
+          type="application/ld+json"
+          is:inline
+          set:html={JSON.stringify(breadcrumbJsonLd).replace(/</g, '\\u003c')}
+        />
+      )
+    }
   </head>
   <body>
     <a class="skip-link" href="#main">本文へスキップ</a>
@@ -106,6 +130,25 @@ const isCurrent = (href: string) => normalizePath(Astro.url.pathname) === normal
     </header>
 
     <main id="main">
+      {
+        crumbs.length > 0 && (
+          <nav class="breadcrumb" aria-label="パンくずリスト">
+            <div class="container">
+              <ol>
+                {crumbs.map((crumb, index) => (
+                  <li>
+                    {index < crumbs.length - 1 ? (
+                      <a href={crumb.href}>{crumb.name}</a>
+                    ) : (
+                      <span aria-current="page">{crumb.name}</span>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </nav>
+        )
+      }
       <slot />
     </main>
 

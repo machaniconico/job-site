@@ -20,9 +20,14 @@ for (const occupation of OCCUPATIONS) {
 
 const title = '職業一覧 | 性格診断';
 const description = `性格診断で提案する全${OCCUPATIONS.length}職業の一覧。エンジニアリングからクリエイティブ、医療・福祉まで、カテゴリ別に仕事内容を一覧できます。気になる職業から、活躍する人の傾向を読んでみてください。`;
+
+const breadcrumbs = [
+  { name: 'ホーム', href: home },
+  { name: '仕事一覧', href: withBase('jobs/') },
+];
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} breadcrumbs={breadcrumbs}>
   <section class="section">
     <div class="container">
       <article class="panel">
