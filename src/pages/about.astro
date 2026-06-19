@@ -4,6 +4,7 @@ import { FACTORS, FACTOR_DISPLAY_ORDER } from '../data/dimensions';
 import { PERSONALITY_TYPES } from '../data/personalityTypes';
 import { OCCUPATIONS } from '../data/occupations';
 import { QUESTION_COUNT } from '../data/questions';
+import { faqPageJsonLd, type FaqItem } from '../lib/faq';
 
 const base = import.meta.env.BASE_URL;
 // 末尾スラッシュを正規化して base 配下の内部リンクを組み立てる（Base.astro 他ページに倣う）
@@ -28,6 +29,46 @@ const breadcrumbs = [
   { name: 'ホーム', href: withBase('') },
   { name: 'このサイトについて', href: withBase('about/') },
 ];
+
+// よくある質問。回答は about/privacy 本文の事実に基づくプレーンテキスト
+// （JSON-LD の Answer.text と可視アコーディオンで同一文を共有する）。
+const faqItems: FaqItem[] = [
+  {
+    question: 'この性格診断は無料ですか？',
+    answer:
+      'はい。会員登録やログインは不要で、すべての機能を無料で利用できます。',
+  },
+  {
+    question: '診断にはどれくらい時間がかかりますか？',
+    answer: `全${QUESTION_COUNT}問の5件法で、所要は約5分です。回答は自動で保存されるため、途中でやめても後から続きを再開できます。`,
+  },
+  {
+    question: '回答したデータは外部に送信されますか？',
+    answer:
+      '送信されません。回答はあなたのブラウザの中（localStorage）にのみ保存され、サーバーや第三者へ送られることは一切ありません。端末の保存データを消せば回答も消えます。',
+  },
+  {
+    question: 'Big Five（5因子モデル）とは何ですか？',
+    answer:
+      '性格を開放性・誠実性・外向性・協調性・神経症傾向の5つの次元で捉える枠組みで、性格心理学で最も実証研究の蓄積がある考え方です。この診断はこの5因子をもとに傾向を測ります。',
+  },
+  {
+    question: '結果のスコアはどれくらい正確ですか？',
+    answer:
+      'スコアは一般の人と比べた偏差値ではなく、あなたの回答の中での相対的な高さ（0〜100）です。心理検査としての標準化や規範データの整備は行っていないため、結果は自己理解のきっかけとして受け取ってください。',
+  },
+  {
+    question: '診断結果を採用選考や心理判定に使えますか？',
+    answer:
+      '使えません。本診断は自己理解を目的としたサンプル診断で、医療・心理判定・採用選考・合否判断の根拠には使用できません。',
+  },
+  {
+    question: '結果は保存したり共有したりできますか？',
+    answer:
+      '結果画面から、結果カード画像（PNG）の保存、サマリーのテキストコピー、SNSへの共有、回答データのJSON書き出し、印刷ができます。',
+  },
+];
+const faqJsonLd = faqPageJsonLd(faqItems);
 ---
 
 <Base
@@ -35,6 +76,12 @@ const breadcrumbs = [
   description="この性格診断が使っている Big Five モデル、診断の仕組み、結果の読み方と限界について。"
   breadcrumbs={breadcrumbs}
 >
+  <script
+    slot="head"
+    type="application/ld+json"
+    is:inline
+    set:html={JSON.stringify(faqJsonLd).replace(/</g, '\\u003c')}
+  />
   <section class="section">
     <div class="container">
       <article class="panel">
@@ -129,6 +176,21 @@ const breadcrumbs = [
             <span>外向性と対人・推進職、誠実性と管理・専門職、開放性と企画・研究・創造職などの関連が、職業研究で繰り返し報告されています。</span>
           </li>
         </ul>
+      </article>
+
+      <article class="panel faq" style="margin-top: var(--space-5)">
+        <p class="eyebrow">FAQ</p>
+        <h2>よくある質問</h2>
+        <div class="faq-list">
+          {
+            faqItems.map((item) => (
+              <details class="faq-item">
+                <summary>{item.question}</summary>
+                <p>{item.answer}</p>
+              </details>
+            ))
+          }
+        </div>
       </article>
     </div>
   </section>
