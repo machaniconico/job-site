@@ -78,9 +78,15 @@ const relatedTypes = PERSONALITY_TYPES.filter((other) => other.id !== type.id)
   .filter((entry) => entry.overlap > 0)
   .sort((a, b) => b.overlap - a.overlap || a.other.id.localeCompare(b.other.id))
   .slice(0, 3);
+
+const breadcrumbs = [
+  { name: 'ホーム', href: home },
+  { name: 'タイプ一覧', href: withBase('types/') },
+  { name: type.name, href: withBase(`type/${type.id}/`) },
+];
 ---
 
-<Base title={title} description={description} ogImage={ogImage}>
+<Base title={title} description={description} ogImage={ogImage} breadcrumbs={breadcrumbs}>
   <section class="section">
     <div class="container">
       <article class="panel">

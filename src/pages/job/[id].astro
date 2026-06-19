@@ -41,9 +41,15 @@ const profileBars = FACTOR_DISPLAY_ORDER.map((key) => {
     value,
   };
 });
+
+const breadcrumbs = [
+  { name: 'ホーム', href: home },
+  { name: '仕事一覧', href: withBase('jobs/') },
+  { name: occupation.title, href: withBase(`job/${occupation.id}/`) },
+];
 ---
 
-<Base title={title} description={description} ogImage={ogImage}>
+<Base title={title} description={description} ogImage={ogImage} breadcrumbs={breadcrumbs}>
   <section class="section">
     <div class="container">
       <article class="panel">

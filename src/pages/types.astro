@@ -11,9 +11,14 @@ const allTypes: PersonalityType[] = [...PERSONALITY_TYPES, BALANCED_TYPE];
 
 const title = '性格タイプ一覧 | 性格診断';
 const description = `Big Five をもとにした全${allTypes.length}タイプの一覧。それぞれのアイコン・名前・一言キャッチから、気になるタイプの紹介ページへ進めます。あなた自身のタイプは50問・約5分の診断で分かります。`;
+
+const breadcrumbs = [
+  { name: 'ホーム', href: home },
+  { name: 'タイプ一覧', href: withBase('types/') },
+];
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} breadcrumbs={breadcrumbs}>
   <section class="section">
     <div class="container">
       <article class="panel">
