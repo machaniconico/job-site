@@ -50,6 +50,7 @@ const otherFactors = FACTOR_DISPLAY_ORDER.filter((k) => k !== key).map((k) => FA
 
 const breadcrumbs = [
   { name: 'ホーム', href: home },
+  { name: '性格の5因子', href: withBase('dimensions/') },
   { name: factor.displayLabel, href: withBase(`dimensions/${key}/`) },
 ];
 ---

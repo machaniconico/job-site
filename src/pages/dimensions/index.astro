@@ -1,0 +1,68 @@
+---
+import Base from '../../layouts/Base.astro';
+import JsonLd from '../../components/JsonLd.astro';
+import { FACTORS, FACTOR_DISPLAY_ORDER } from '../../data/dimensions';
+import { DIMENSION_GUIDES } from '../../data/dimensionGuides';
+import { itemListJsonLd } from '../../lib/itemList';
+import { withBase } from '../../lib/url';
+
+const home = withBase('');
+
+const title = '性格の5因子（Big Five）ガイド | 性格診断';
+const description =
+  '開放性・誠実性・外向性・協調性・情緒安定性。心理学で最も広く使われる Big Five（5因子）を、高い人・低い人の特徴や向きやすい仕事とあわせて1因子ずつ読み解けるガイドです。';
+
+const breadcrumbs = [
+  { name: 'ホーム', href: home },
+  { name: '性格の5因子', href: withBase('dimensions/') },
+];
+
+const factors = FACTOR_DISPLAY_ORDER.map((key) => ({
+  key,
+  factor: FACTORS[key],
+  guide: DIMENSION_GUIDES[key],
+}));
+
+// 一覧カードと同じ並び順で ItemList 構造化データを宣言。
+const origin = Astro.site ?? Astro.url.origin;
+const listJsonLd = itemListJsonLd(
+  factors.map(({ key, factor }) => ({
+    name: factor.displayLabel,
+    url: new URL(withBase(`dimensions/${key}/`), origin).toString(),
+  })),
+);
+---
+
+<Base title={title} description={description} breadcrumbs={breadcrumbs}>
+  <JsonLd data={listJsonLd} slot="head" />
+  <section class="section">
+    <div class="container">
+      <article class="panel">
+        <p class="eyebrow">性格の5因子</p>
+        <h1>Big Five — 5つの性格因子ガイド</h1>
+        <p class="lead">
+          人の性格は、次の5つの大きな因子（Big Five）で説明できるとされています。各因子に「高い／低い」の優劣はなく、力を発揮しやすい環境が違うだけです。気になる因子から、高い人・低い人の特徴や向きやすい仕事を読んでみてください。
+        </p>
+        <div class="hero-actions" style="margin-top: var(--space-4)">
+          <a class="btn btn-primary" href={home}>診断で自分のスコアを見る</a>
+        </div>
+      </article>
+
+      <article class="panel" style="margin-top: var(--space-5)">
+        <div class="job-grid">
+          {
+            factors.map(({ key, factor, guide }) => (
+              <a class="job-grid-card" href={withBase(`dimensions/${key}/`)}>
+                <span class="job-grid-title">
+                  {factor.displayLabel}
+                  <small style="font-weight: 400; color: var(--color-text-soft)">（{factor.englishName}）</small>
+                </span>
+                <span class="job-grid-desc">{guide.summary}</span>
+              </a>
+            ))
+          }
+        </div>
+      </article>
+    </div>
+  </section>
+</Base>
