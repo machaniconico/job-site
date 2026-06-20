@@ -104,6 +104,7 @@ const isCurrent = (href: string) => normalizePath(Astro.url.pathname) === normal
         />
       )
     }
+    <slot name="head" />
   </head>
   <body>
     <a class="skip-link" href="#main">本文へスキップ</a>
