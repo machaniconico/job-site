@@ -75,15 +75,23 @@ export function buildTypeFaq(
       question: `「${name}」タイプはどんな性格ですか？`,
       answer: `${type.catch}と表現されるタイプです。${type.summary}`,
     },
-    {
+  ];
+
+  // strengths/cautions/仕事 は空配列だと「「」といった…」と文面が壊れるため、
+  // 中身があるときだけ設問を足す（topJobTitles と同じ防御）。
+  if (type.strengths.length > 0) {
+    items.push({
       question: `「${name}」タイプの強みは何ですか？`,
       answer: `${quote(type.strengths)}といった点が強みとして表れやすいタイプです。`,
-    },
-    {
+    });
+  }
+
+  if (type.cautions.length > 0) {
+    items.push({
       question: `「${name}」タイプが気をつけたい点はありますか？`,
       answer: `${quote(type.cautions)}などが挙げられます。弱点というより、意識しておくと活きやすいクセです。`,
-    },
-  ];
+    });
+  }
 
   if (topJobTitles.length > 0) {
     items.push({

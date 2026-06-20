@@ -76,6 +76,15 @@ describe('buildTypeFaq', () => {
     expect(faq.some((item) => item.question.includes('仕事'))).toBe(false);
   });
 
+  it('strengths/cautions が空なら該当設問を省く（文面が壊れない）', () => {
+    const bare = { ...investigator, strengths: [], cautions: [] };
+    const faq = buildTypeFaq(bare, jobs);
+    expect(faq).toHaveLength(2); // 性格 + 仕事 のみ
+    expect(faq.some((item) => item.question.includes('強み'))).toBe(false);
+    expect(faq.some((item) => item.question.includes('気をつけたい'))).toBe(false);
+    for (const item of faq) expect(item.answer).not.toContain('「」');
+  });
+
   it('回答は HTML タグを含まないプレーンテキスト（FAQPage ポリシー順守）', () => {
     const faq = buildTypeFaq(BALANCED_TYPE, jobs);
     for (const item of faq) {
