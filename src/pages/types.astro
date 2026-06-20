@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import { PERSONALITY_TYPES, BALANCED_TYPE } from '../data/personalityTypes';
 import type { PersonalityType } from '../lib/types';
+import { itemListJsonLd } from '../lib/itemList';
 import { withBase } from '../lib/url';
 
 const home = withBase('');
@@ -15,9 +16,24 @@ const breadcrumbs = [
   { name: 'ホーム', href: home },
   { name: 'タイプ一覧', href: withBase('types/') },
 ];
+
+// 一覧カードと同じ並び順で ItemList 構造化データを宣言（絶対URLに解決）。
+const origin = Astro.site ?? Astro.url.origin;
+const listJsonLd = itemListJsonLd(
+  allTypes.map((type) => ({
+    name: type.name,
+    url: new URL(withBase(`type/${type.id}/`), origin).toString(),
+  })),
+);
 ---
 
 <Base title={title} description={description} breadcrumbs={breadcrumbs}>
+  <script
+    slot="head"
+    type="application/ld+json"
+    is:inline
+    set:html={JSON.stringify(listJsonLd).replace(/</g, '\\u003c')}
+  />
   <section class="section">
     <div class="container">
       <article class="panel">

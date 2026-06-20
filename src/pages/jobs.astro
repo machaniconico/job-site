@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import { OCCUPATIONS } from '../data/occupations';
 import type { Occupation } from '../lib/types';
+import { itemListJsonLd } from '../lib/itemList';
 import { withBase } from '../lib/url';
 
 const home = withBase('');
@@ -24,9 +25,26 @@ const breadcrumbs = [
   { name: 'ホーム', href: home },
   { name: '仕事一覧', href: withBase('jobs/') },
 ];
+
+// 一覧カードと同じ並び順（カテゴリ別の初出順）で ItemList 構造化データを宣言。
+const origin = Astro.site ?? Astro.url.origin;
+const listJsonLd = itemListJsonLd(
+  groups.flatMap((group) =>
+    group.jobs.map((job) => ({
+      name: job.title,
+      url: new URL(withBase(`job/${job.id}/`), origin).toString(),
+    })),
+  ),
+);
 ---
 
 <Base title={title} description={description} breadcrumbs={breadcrumbs}>
+  <script
+    slot="head"
+    type="application/ld+json"
+    is:inline
+    set:html={JSON.stringify(listJsonLd).replace(/</g, '\\u003c')}
+  />
   <section class="section">
     <div class="container">
       <article class="panel">
