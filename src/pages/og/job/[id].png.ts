@@ -2,10 +2,11 @@ import type { APIRoute, GetStaticPaths } from 'astro';
 import sharp from 'sharp';
 
 import { OCCUPATIONS } from '../../../data/occupations';
+import { OG_HEIGHT, OG_WIDTH } from '../../../lib/og';
 import type { Occupation } from '../../../lib/types';
 
-const width = 1200;
-const height = 630;
+const width = OG_WIDTH;
+const height = OG_HEIGHT;
 const fontFamily =
   'Hiragino Sans, Hiragino Kaku Gothic ProN, Yu Gothic, Meiryo, system-ui, sans-serif';
 

@@ -3,6 +3,7 @@ import '../styles/tokens.css';
 import '../styles/global.css';
 import JsonLd from '../components/JsonLd.astro';
 import { breadcrumbListJsonLd, type Breadcrumb } from '../lib/breadcrumbs';
+import { OG_HEIGHT, OG_WIDTH } from '../lib/og';
 import { withBase } from '../lib/url';
 
 interface Props {
@@ -94,6 +95,9 @@ const isCurrent = (href: string) => normalizePath(Astro.url.pathname) === normal
     <meta property="og:url" content={Astro.url} />
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:alt" content={title} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content={String(OG_WIDTH)} />
+    <meta property="og:image:height" content={String(OG_HEIGHT)} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
