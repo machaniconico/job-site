@@ -1442,12 +1442,32 @@ a:hover {
 
 /* ---------- print ---------- */
 @media print {
+  /* Always print in a light, ink-friendly palette. Without this, printing
+   * while dark mode is active leaves near-white text on the forced-white page
+   * (invisible). Override the base tokens for both the OS-preference dark
+   * scope (:root) and the manual toggle (:root[data-theme="dark"]); the
+   * --color-* aliases inherit from these. */
+  :root,
+  :root[data-theme='dark'] {
+    --bg-primary: #ffffff;
+    --bg-secondary: #ffffff;
+    --bg-card: #ffffff;
+    --bg-card-hover: #ffffff;
+    --border-color: #999999;
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-muted: #475569;
+    /* Pin the light-mode accent so score bars print crisply (and consistently)
+     * regardless of the active theme. */
+    --accent: #2563eb;
+  }
   .site-header,
   .header-nav,
   .theme-toggle,
   .hero-actions,
   .result-actions,
-  .question-actions {
+  .question-actions,
+  .footer {
     display: none !important;
   }
   body {
@@ -1456,6 +1476,7 @@ a:hover {
   }
   .panel {
     box-shadow: none;
-    border-color: #ccc;
+    border-color: #999;
+    break-inside: avoid;
   }
 }
