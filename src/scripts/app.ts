@@ -148,6 +148,11 @@ function jobPageUrl(jobId: string): string {
   return pageUrl('job', jobId);
 }
 
+/** 因子別ガイドページの絶対URL。 */
+function dimensionPageUrl(key: FactorKey): string {
+  return pageUrl('dimensions', key);
+}
+
 /** URL ハッシュ（#r=...）から共有コードを取り出す。無ければ null。 */
 function readSharedCode(): string | null {
   const match = /[#&]r=([^&]+)/.exec(location.hash);
@@ -612,7 +617,8 @@ function renderResult(): void {
       const blurb = roundedScore >= 50 ? f.highBlurb : f.lowBlurb;
       const daily = FACTOR_DAILY_BLURB[k][roundedScore >= 50 ? 'high' : 'low'];
       const breakdown = renderFacetBreakdown(facetsByFactor, k);
-      return `<div class="bar-row"><div class="bar-label"><strong>${esc(f.displayLabel)}</strong><small>${esc(f.englishName)}</small></div><div class="bar-track"><span style="width:${roundedScore}%"></span></div><div class="bar-value">${roundedScore}</div></div><div class="bar-detail"><p class="bar-blurb">${esc(blurb)}</p><p class="bar-daily">${esc(daily)}</p>${breakdown}</div>`;
+      const guideLink = `<p class="bar-guide-link"><a href="${esc(dimensionPageUrl(k))}">${esc(f.displayLabel)}とは？もっと読む →</a></p>`;
+      return `<div class="bar-row"><div class="bar-label"><strong>${esc(f.displayLabel)}</strong><small>${esc(f.englishName)}</small></div><div class="bar-track"><span style="width:${roundedScore}%"></span></div><div class="bar-value">${roundedScore}</div></div><div class="bar-detail"><p class="bar-blurb">${esc(blurb)}</p><p class="bar-daily">${esc(daily)}</p>${breakdown}${guideLink}</div>`;
     }).join('');
   }
   const note = $('#factorNote');

@@ -833,6 +833,18 @@ a:hover {
   font-size: var(--step--1);
   color: var(--color-text-mute);
 }
+.bar-guide-link {
+  margin: var(--space-2) 0 0;
+  font-size: var(--step--1);
+  font-weight: 600;
+}
+.bar-guide-link a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+.bar-guide-link a:hover {
+  text-decoration: underline;
+}
 
 /* ファセット内訳（折りたたみ） */
 .facet-details {
