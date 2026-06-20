@@ -4,10 +4,8 @@ import { FACTORS, FACTOR_DISPLAY_ORDER } from '../data/dimensions';
 import { QUESTION_COUNT } from '../data/questions';
 import { OCCUPATIONS } from '../data/occupations';
 import { PERSONALITY_TYPES } from '../data/personalityTypes';
+import { withBase } from '../lib/url';
 
-// 内部リンクは Base.astro に倣ってローカルに組み立てる（末尾スラッシュを正規化）。
-const base = import.meta.env.BASE_URL;
-const withBase = (path: string) => `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
 const typesHref = withBase('types');
 const jobsHref = withBase('jobs');
 

@@ -6,6 +6,7 @@ import { FACTORS, FACTOR_DISPLAY_ORDER } from '../../data/dimensions';
 import { rankOccupations } from '../../lib/matching';
 import { displayScore } from '../../lib/scoring';
 import { expectedScoresFromPattern } from '../../lib/typing';
+import { withBase } from '../../lib/url';
 import type { FactorKey, PersonalityType, Profile } from '../../lib/types';
 
 export function getStaticPaths() {
@@ -22,8 +23,6 @@ interface Props {
 
 const { type } = Astro.props;
 
-const base = import.meta.env.BASE_URL;
-const withBase = (path: string) => `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
 const home = withBase('');
 
 const title = `${type.name}（${type.catch}）| 性格診断`;
