@@ -1,0 +1,193 @@
+---
+import Base from '../../layouts/Base.astro';
+import { FACTORS, FACTOR_DISPLAY_ORDER } from '../../data/dimensions';
+import { DIMENSION_GUIDES } from '../../data/dimensionGuides';
+import { OCCUPATIONS } from '../../data/occupations';
+import { PERSONALITY_TYPES } from '../../data/personalityTypes';
+import { displayScore } from '../../lib/scoring';
+import { withBase } from '../../lib/url';
+import { FACTOR_KEYS } from '../../lib/types';
+import type { FactorKey, Level } from '../../lib/types';
+
+export function getStaticPaths() {
+  return FACTOR_KEYS.map((key) => ({ params: { key }, props: { key } }));
+}
+
+const { key } = Astro.props as { key: FactorKey };
+
+const factor = FACTORS[key];
+const guide = DIMENSION_GUIDES[key];
+const home = withBase('');
+
+const title = `${factor.displayLabel}（${factor.englishName}）とは | 性格診断`;
+const description = `${factor.displayLabel}が高い人・低い人の特徴、仕事での現れ方、相性の良い職業と性格タイプを解説。Big Five（5因子）のひとつ ${factor.englishName} をやさしく読み解きます。`;
+
+// このページの因子の「表示スコア」で職業を並べる。N は inverted で情緒安定性に反転。
+// 単一因子のページなので overall fit ではなく、その因子の displayScore でランクする。
+const ranked = OCCUPATIONS.map((occupation) => ({
+  occupation,
+  ds: displayScore(occupation.profile[key], factor.inverted),
+}));
+const highJobs = [...ranked].sort((a, b) => b.ds - a.ds).slice(0, 6);
+const lowJobs = [...ranked].sort((a, b) => a.ds - b.ds).slice(0, 6);
+
+// 性格タイプを「表示軸」での高/低に振り分ける。
+// pattern は素の因子基準なので、inverted（N）のときは high↔low を反転して表示軸に合わせる。
+function displayWant(raw: Level, inverted: boolean): Level {
+  if (!inverted || raw === 'mid') return raw;
+  return raw === 'high' ? 'low' : 'high';
+}
+const typed = PERSONALITY_TYPES.flatMap((type) => {
+  const raw = type.pattern[key];
+  if (raw === undefined || raw === 'mid') return [];
+  return [{ type, want: displayWant(raw, factor.inverted) }];
+});
+const highTypes = typed.filter((t) => t.want === 'high').map((t) => t.type);
+const lowTypes = typed.filter((t) => t.want === 'low').map((t) => t.type);
+
+// 他の4因子へのクロスリンク。
+const otherFactors = FACTOR_DISPLAY_ORDER.filter((k) => k !== key).map((k) => FACTORS[k]);
+
+const breadcrumbs = [
+  { name: 'ホーム', href: home },
+  { name: factor.displayLabel, href: withBase(`dimensions/${key}/`) },
+];
+---
+
+<Base title={title} description={description} breadcrumbs={breadcrumbs}>
+  <section class="section">
+    <div class="container">
+      <article class="panel">
+        <p class="eyebrow">性格の5因子（Big Five）</p>
+        <h1>{factor.displayLabel}<small style="font-weight: 400; color: var(--color-text-soft)">（{factor.englishName}）</small></h1>
+        <p class="lead">{guide.summary}</p>
+        {
+          factor.inverted && (
+            <p class="job-detail-note" style="margin-top: var(--space-3)">
+              ※「{factor.displayLabel}」は神経症傾向（{factor.englishName}）を反転した表示です。高いほど、プレッシャーの中でも落ち着きを保ちやすい傾向を表します。
+            </p>
+          )
+        }
+        <div class="hero-actions" style="margin-top: var(--space-4)">
+          <a class="btn btn-primary" href={home}>診断で自分のスコアを見る</a>
+        </div>
+      </article>
+
+      <article class="panel" style="margin-top: var(--space-5)">
+        <p class="eyebrow">高い人・低い人の特徴</p>
+        <div class="grid-2" style="margin-top: var(--space-4)">
+          <div>
+            <p class="eyebrow">{guide.highLabel}（高い側）</p>
+            <p class="job-detail-note">{factor.highBlurb}</p>
+            <ul>
+              {guide.highTraits.map((t) => <li>{t}</li>)}
+            </ul>
+          </div>
+          <div>
+            <p class="eyebrow">{guide.lowLabel}（低い側）</p>
+            <p class="job-detail-note">{factor.lowBlurb}</p>
+            <ul>
+              {guide.lowTraits.map((t) => <li>{t}</li>)}
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel" style="margin-top: var(--space-5)">
+        <p class="eyebrow">仕事での現れ方</p>
+        <ul>
+          {guide.atWork.map((t) => <li>{t}</li>)}
+        </ul>
+        <p class="job-detail-note" style="margin-top: var(--space-3)">{guide.growth}</p>
+      </article>
+
+      <article class="panel" style="margin-top: var(--space-5)">
+        <p class="eyebrow">{guide.highLabel}が活躍しやすい職業</p>
+        <p class="job-detail-note">「{guide.highLabel}」の傾向が強い人が力を発揮しやすい職業の目安です（相性の一例で、当てはまらなくても活躍できます）。</p>
+        <div class="job-grid">
+          {
+            highJobs.map(({ occupation }) => (
+              <a class="job-grid-card" href={withBase(`job/${occupation.id}/`)}>
+                <span class="job-grid-title">{occupation.title}</span>
+                <span class="job-grid-desc">{occupation.category}</span>
+              </a>
+            ))
+          }
+        </div>
+      </article>
+
+      <article class="panel" style="margin-top: var(--space-5)">
+        <p class="eyebrow">{guide.lowLabel}が活躍しやすい職業</p>
+        <p class="job-detail-note">「{guide.lowLabel}」の傾向が強い人が力を発揮しやすい職業の目安です。</p>
+        <div class="job-grid">
+          {
+            lowJobs.map(({ occupation }) => (
+              <a class="job-grid-card" href={withBase(`job/${occupation.id}/`)}>
+                <span class="job-grid-title">{occupation.title}</span>
+                <span class="job-grid-desc">{occupation.category}</span>
+              </a>
+            ))
+          }
+        </div>
+      </article>
+
+      {
+        (highTypes.length > 0 || lowTypes.length > 0) && (
+          <article class="panel" style="margin-top: var(--space-5)">
+            <p class="eyebrow">関連する性格タイプ</p>
+            <p class="job-detail-note">この因子が特徴に表れやすい性格タイプです。読み比べてみてください。</p>
+            {highTypes.length > 0 && (
+              <>
+                <p class="eyebrow" style="margin-top: var(--space-4)">{guide.highLabel}寄りのタイプ</p>
+                <div class="type-related">
+                  {highTypes.map((type) => (
+                    <a class="type-related-card" href={withBase(`type/${type.id}/`)}>
+                      <span class="type-related-icon" aria-hidden="true">{type.icon}</span>
+                      <span class="type-related-body">
+                        <span class="type-related-name">{type.name}</span>
+                        <span class="type-related-catch">{type.catch}</span>
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              </>
+            )}
+            {lowTypes.length > 0 && (
+              <>
+                <p class="eyebrow" style="margin-top: var(--space-4)">{guide.lowLabel}寄りのタイプ</p>
+                <div class="type-related">
+                  {lowTypes.map((type) => (
+                    <a class="type-related-card" href={withBase(`type/${type.id}/`)}>
+                      <span class="type-related-icon" aria-hidden="true">{type.icon}</span>
+                      <span class="type-related-body">
+                        <span class="type-related-name">{type.name}</span>
+                        <span class="type-related-catch">{type.catch}</span>
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              </>
+            )}
+          </article>
+        )
+      }
+
+      <article class="panel" style="margin-top: var(--space-5)">
+        <p class="eyebrow">ほかの因子も読む</p>
+        <div class="job-grid">
+          {
+            otherFactors.map((f) => (
+              <a class="job-grid-card" href={withBase(`dimensions/${f.key}/`)}>
+                <span class="job-grid-title">{f.displayLabel}</span>
+                <span class="job-grid-desc">{f.description}</span>
+              </a>
+            ))
+          }
+        </div>
+        <div class="hero-actions" style="margin-top: var(--space-5)">
+          <a class="btn btn-primary" href={home}>診断をはじめる</a>
+        </div>
+      </article>
+    </div>
+  </section>
+</Base>

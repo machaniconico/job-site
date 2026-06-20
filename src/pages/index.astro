@@ -119,6 +119,9 @@ const previewCards = [
                 {FACTORS[k].displayLabel}（{FACTORS[k].englishName}）
               </strong>
               <span>{FACTORS[k].description}</span>
+              <a class="axis-link" href={withBase(`dimensions/${k}/`)}>
+                {FACTORS[k].displayLabel}を詳しく読む →
+              </a>
             </li>
           ))
         }
