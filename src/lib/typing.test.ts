@@ -136,9 +136,9 @@ describe('expectedScoresFromPattern', () => {
 });
 
 describe('occupation catalog integrity', () => {
-  it('has 48 occupations with unique ids', () => {
-    expect(OCCUPATIONS).toHaveLength(48);
-    expect(new Set(OCCUPATIONS.map((o) => o.id)).size).toBe(48);
+  it('has 60 occupations with unique ids', () => {
+    expect(OCCUPATIONS).toHaveLength(60);
+    expect(new Set(OCCUPATIONS.map((o) => o.id)).size).toBe(60);
   });
   it('every occupation fully satisfies the Occupation shape', () => {
     for (const o of OCCUPATIONS) {
