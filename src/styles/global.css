@@ -479,6 +479,17 @@ a:hover {
   font-size: var(--step--1);
   color: var(--color-text-soft);
 }
+.axis-link {
+  margin-top: var(--space-1);
+  font-size: var(--step--1);
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  align-self: flex-start;
+}
+.axis-link:hover {
+  text-decoration: underline;
+}
 .about-links {
   display: flex;
   flex-wrap: wrap;
