@@ -19,6 +19,17 @@ for (const occupation of OCCUPATIONS) {
   group.jobs.push(occupation);
 }
 
+// クライアント検索用の正規化済みインデックス文字列（職業名 + 説明 + スキル + カテゴリ）。
+// jobSearch.ts の normalize() と同じ規則（全角空白→半角・小文字化）で生成する。
+const searchIndex = (job: Occupation): string =>
+  [job.title, job.description, job.skillThemes.join(' '), job.category]
+    .join(' ')
+    .replace(/　/g, ' ')
+    .toLowerCase();
+
+// チップ表示用のカテゴリ一覧（初出順）。
+const categories = groups.map((g) => g.category);
+
 const title = '職業一覧 | 性格診断';
 const description = `性格診断で提案する全${OCCUPATIONS.length}職業の一覧。エンジニアリングからクリエイティブ、医療・福祉まで、カテゴリ別に仕事内容を一覧できます。気になる職業から、活躍する人の傾向を読んでみてください。`;
 
@@ -57,13 +68,44 @@ const listJsonLd = itemListJsonLd(
         </div>
       </article>
 
+      <article class="panel job-search" data-job-search hidden style="margin-top: var(--space-5)">
+        <label class="sr-only" for="job-search-input">職業を検索</label>
+        <input
+          id="job-search-input"
+          class="job-search-input"
+          type="search"
+          inputmode="search"
+          autocomplete="off"
+          placeholder="職業名・仕事内容・スキルで検索（例: デザイン / データ / 医療）"
+        />
+        <div class="job-filter-chips" role="group" aria-label="カテゴリで絞り込み">
+          <button type="button" class="chip" data-category-chip="" aria-pressed="true">すべて</button>
+          {categories.map((category) => (
+            <button type="button" class="chip" data-category-chip={category} aria-pressed="false">
+              {category}
+            </button>
+          ))}
+        </div>
+        <p class="job-search-count" id="job-search-count" role="status" aria-live="polite">
+          {OCCUPATIONS.length}件の職業
+        </p>
+        <p class="job-search-empty" id="job-search-empty" hidden>
+          該当する職業が見つかりませんでした。別のキーワードやカテゴリでお試しください。
+        </p>
+      </article>
+
       {
         groups.map((group) => (
-          <article class="panel" style="margin-top: var(--space-5)">
+          <article class="panel job-group" data-job-group data-category={group.category} style="margin-top: var(--space-5)">
             <p class="eyebrow">{group.category}</p>
             <div class="job-grid">
               {group.jobs.map((job) => (
-                <a class="job-grid-card" href={withBase(`job/${job.id}/`)}>
+                <a
+                  class="job-grid-card"
+                  href={withBase(`job/${job.id}/`)}
+                  data-search={searchIndex(job)}
+                  data-category={job.category}
+                >
                   <span class="job-grid-title">{job.title}</span>
                   <span class="job-grid-desc">{job.description}</span>
                 </a>
@@ -74,4 +116,7 @@ const listJsonLd = itemListJsonLd(
       }
     </div>
   </section>
+  <script>
+    import '../scripts/jobSearch.ts';
+  </script>
 </Base>

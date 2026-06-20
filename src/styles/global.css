@@ -1277,6 +1277,69 @@ a:hover {
   color: var(--color-text-soft);
 }
 
+/* 職業一覧の検索 / 絞り込み（JS 有効時のみ表示） */
+.job-search {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.job-search-input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  font: inherit;
+  font-size: var(--step-0);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+}
+.job-search-input::placeholder {
+  color: var(--color-text-soft);
+}
+.job-search-input:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+.job-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.chip {
+  padding: var(--space-1) var(--space-3);
+  font: inherit;
+  font-size: var(--step--1);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+.chip:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.chip[aria-pressed='true'] {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--accent-contrast);
+}
+.chip:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+.job-search-count {
+  margin: 0;
+  font-size: var(--step--1);
+  color: var(--color-text-soft);
+}
+.job-search-empty {
+  margin: 0;
+  color: var(--color-text-soft);
+}
+
 @media (prefers-reduced-motion: no-preference) {
   @keyframes fade-up {
     from {
