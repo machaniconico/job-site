@@ -19,10 +19,7 @@ export function getStaticPaths() {
   }));
 }
 
-interface Props {
-  type: PersonalityType;
-}
-
+// props 型は getStaticPaths の返り値から Astro が自動推論する（明示 interface は冗長）。
 const { type } = Astro.props;
 
 const home = withBase('');
