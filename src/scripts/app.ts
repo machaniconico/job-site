@@ -175,6 +175,49 @@ function clearShareHash(): void {
   }
 }
 
+/** 一時的にボタンのラベルを差し替えてフィードバックする（1.5秒で戻す）。 */
+function flashButtonLabel(btn: HTMLElement | null, message: string): void {
+  if (!btn) return;
+  // 連打中はフラッシュ文言を「本来のラベル」として取り込まないよう、復元待ちの間は無視する。
+  if (btn.dataset.flashing) return;
+  btn.dataset.flashing = '1';
+  const original = btn.textContent;
+  btn.textContent = message;
+  setTimeout(() => {
+    btn.textContent = original;
+    delete btn.dataset.flashing;
+  }, 1500);
+}
+
+/**
+ * 結果の共有リンクを共有する。Web Share API が使える端末（主にモバイル）では
+ * ネイティブの共有シートを開き、使えなければクリップボードへコピーする。
+ */
+async function shareResultLink(): Promise<void> {
+  if (!lastProfile) return;
+  const url = buildShareLink();
+  const btn = $('#copyResultLinkBtn');
+  const shareData: ShareData = { title: '性格診断の結果', text: summaryText(), url };
+
+  if (typeof navigator.share === 'function' && (!navigator.canShare || navigator.canShare(shareData))) {
+    try {
+      await navigator.share(shareData);
+      return;
+    } catch (err) {
+      // ユーザーが共有シートを閉じた（AbortError）場合は何もしない。
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      // それ以外の失敗はクリップボードへフォールバックする。
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(url);
+    flashButtonLabel(btn, 'リンクをコピーしました');
+  } catch {
+    alert('共有に失敗しました。お使いのブラウザの設定をご確認ください。');
+  }
+}
+
 function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
@@ -655,22 +698,13 @@ function init(): void {
     const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(summaryText())}&url=${encodeURIComponent(url)}`;
     window.open(intent, '_blank', 'noopener');
   });
-  $('#copyResultLinkBtn')?.addEventListener('click', async () => {
-    // 自分の回答そのものをハッシュに載せた「結果が復元できるリンク」をコピーする。
-    if (!lastProfile) return;
-    const btn = $('#copyResultLinkBtn');
-    try {
-      await navigator.clipboard.writeText(buildShareLink());
-      if (btn) {
-        const original = btn.textContent;
-        btn.textContent = 'リンクをコピーしました';
-        setTimeout(() => {
-          btn.textContent = original;
-        }, 1500);
-      }
-    } catch {
-      alert('リンクのコピーに失敗しました。お使いのブラウザの設定をご確認ください。');
-    }
+  // Web Share API が使える端末ではボタンの意味が「共有」になるためラベルを合わせる。
+  const resultLinkBtn = $('#copyResultLinkBtn');
+  if (resultLinkBtn && typeof navigator.share === 'function') {
+    resultLinkBtn.textContent = '結果を共有';
+  }
+  resultLinkBtn?.addEventListener('click', () => {
+    void shareResultLink();
   });
   $('#saveImageBtn')?.addEventListener('click', async () => {
     if (!lastProfile || !lastType) return;
