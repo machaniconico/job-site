@@ -660,12 +660,20 @@ function init(): void {
   const hasProgress = answeredCount() > 0;
   show('#resumeBtn', hasProgress);
   show('#resetBtn', hasProgress);
+  // 全問回答済みで再訪したときは、回答し直さず前回の結果を直接見られるようにする。
+  show('#showResultBtn', answeredCount() === QUESTION_COUNT);
 
   $('#startBtn')?.addEventListener('click', () => {
     clearAll();
     show('#resumeBtn', false);
     show('#resetBtn', false);
+    show('#showResultBtn', false);
     startDiagnosis();
+  });
+  $('#showResultBtn')?.addEventListener('click', () => {
+    // 結果を表示したら、もう用済みのショートカットは引っ込める。
+    show('#showResultBtn', false);
+    renderResult();
   });
   $('#resumeBtn')?.addEventListener('click', () => {
     // 共有リンク表示で state.answers がメモリ上だけ差し替わっている可能性があるため、
@@ -678,6 +686,7 @@ function init(): void {
       clearAll();
       show('#resumeBtn', false);
       show('#resetBtn', false);
+      show('#showResultBtn', false);
       show('#diagnosis', false);
       show('#result', false);
     }
@@ -699,6 +708,7 @@ function init(): void {
   $('#finishBtn')?.addEventListener('click', () => renderResult());
   $('#retakeBtn')?.addEventListener('click', () => {
     clearAll();
+    show('#showResultBtn', false);
     show('#result', false);
     startDiagnosis();
   });
@@ -770,6 +780,7 @@ function init(): void {
     state.answers = sharedAnswers;
     show('#resumeBtn', false);
     show('#resetBtn', false);
+    show('#showResultBtn', false);
     show('#sharedNotice', true);
     renderResult();
     // スクリーンリーダーに「共有結果を見ている」ことを伝えるため通知へフォーカスする。
