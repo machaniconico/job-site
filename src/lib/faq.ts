@@ -5,6 +5,8 @@
  * ページ側は {@link FaqItem} の配列を1つ用意すればよい。
  */
 
+import type { PersonalityType } from './types';
+
 export interface FaqItem {
   /** 質問文 */
   question: string;
@@ -47,4 +49,48 @@ export function faqPageJsonLd(items: FaqItem[]): FaqPageJsonLd {
       },
     })),
   };
+}
+
+/**
+ * 性格タイプ詳細ページ向けの FAQ を、タイプ定義から組み立てる。
+ *
+ * 検索からタイプページに着地したユーザーがまず抱く問い（どんな性格か / 強み /
+ * 気をつけたい点 / 向く仕事）を、タイプの既存フィールドだけで埋める。可視の
+ * アコーディオンと FAQPage JSON-LD の両方に同じ配列を渡すため、回答は HTML を
+ * 含まないプレーンテキストにする（Google の「可視回答と一致」ポリシー順守）。
+ *
+ * @param type 対象の性格タイプ
+ * @param topJobTitles 「向きやすい仕事 TOP5」の職業名（表示順）。空配列なら仕事の設問は省く
+ * @returns 表示順そのままの FAQ 配列
+ */
+export function buildTypeFaq(
+  type: Pick<PersonalityType, 'name' | 'catch' | 'summary' | 'strengths' | 'cautions'>,
+  topJobTitles: string[],
+): FaqItem[] {
+  const { name } = type;
+  const quote = (items: string[]) => items.map((item) => `「${item}」`).join('');
+
+  const items: FaqItem[] = [
+    {
+      question: `「${name}」タイプはどんな性格ですか？`,
+      answer: `${type.catch}と表現されるタイプです。${type.summary}`,
+    },
+    {
+      question: `「${name}」タイプの強みは何ですか？`,
+      answer: `${quote(type.strengths)}といった点が強みとして表れやすいタイプです。`,
+    },
+    {
+      question: `「${name}」タイプが気をつけたい点はありますか？`,
+      answer: `${quote(type.cautions)}などが挙げられます。弱点というより、意識しておくと活きやすいクセです。`,
+    },
+  ];
+
+  if (topJobTitles.length > 0) {
+    items.push({
+      question: `「${name}」タイプに向いている仕事は何ですか？`,
+      answer: `${quote(topJobTitles)}などと相性が良い傾向があります。マッチ度はあくまで目安で、当てはまらなくても活躍できます。`,
+    });
+  }
+
+  return items;
 }
