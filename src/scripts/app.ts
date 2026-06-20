@@ -387,7 +387,7 @@ function renderQuestions(): void {
         const inputId = `${q.id}-${o.value}`;
         return `<div class="answer-choice"><input id="${esc(inputId)}" type="radio" name="${esc(q.id)}" value="${o.value}" ${checked} aria-label="${esc(o.label)}"><label class="answer-circle" for="${esc(inputId)}" data-pole="${esc(o.pole)}" aria-label="${esc(o.label)}"><span class="answer-digit" aria-hidden="true">${o.value}</span><span class="sr-only">${esc(o.label)}</span></label></div>`;
       }).join('');
-      return `<article class="question-card"><div class="question-meta"><span>Q${num}</span><span>${esc(FACTORS[q.factor].displayLabel)}</span></div><h3>${esc(q.text)}</h3><fieldset class="answer-scale" aria-describedby="${esc(hintId)}"><legend class="sr-only">${esc(q.text)}</legend><div class="answer-guides" aria-hidden="true"><span>当てはまらない ←</span><span>→ 当てはまる</span></div><div class="answer-row">${opts}</div><p class="answer-key-hint" id="${esc(hintId)}">数字キー 1〜5 でも選べます</p></fieldset></article>`;
+      return `<article class="question-card" data-qid="${esc(q.id)}"><div class="question-meta"><span>Q${num} <span class="q-check" data-q-check hidden aria-hidden="true">✓</span></span><span>${esc(FACTORS[q.factor].displayLabel)}</span></div><h3>${esc(q.text)}</h3><fieldset class="answer-scale" aria-describedby="${esc(hintId)}"><legend class="sr-only">${esc(q.text)}</legend><div class="answer-guides" aria-hidden="true"><span>当てはまらない ←</span><span>→ 当てはまる</span></div><div class="answer-row">${opts}</div><p class="answer-key-hint" id="${esc(hintId)}">数字キー 1〜5 でも選べます</p></fieldset></article>`;
     })
     .join('');
 
@@ -398,11 +398,51 @@ function renderQuestions(): void {
       save();
       renderProgress();
       updateNav();
+      updateUnansweredState();
     });
   });
 
   renderProgress();
   updateNav();
+  updateUnansweredState();
+}
+
+/**
+ * 現在ページ内の未回答状況を反映する。回答済みカードに ✓ を出し、
+ * 「あと N 問」のヒント（aria-live）と「未回答へ移動」ボタンの表示/非表示を更新する。
+ * 採点・判定には一切関与しない、表示専用の補助。
+ */
+function updateUnansweredState(): void {
+  const cards = $$('#questionList .question-card');
+  let remaining = 0;
+  cards.forEach((card) => {
+    const qid = card.getAttribute('data-qid');
+    const answered = qid != null && state.answers[qid] != null;
+    if (!answered) remaining += 1;
+    const check = card.querySelector('[data-q-check]');
+    if (check instanceof HTMLElement) check.hidden = !answered;
+  });
+
+  const hint = $('#pageHint');
+  if (hint) {
+    hint.textContent =
+      remaining > 0
+        ? `このページはあと ${remaining} 問で次に進めます。`
+        : 'このページは回答済みです。次へ進めましょう。';
+  }
+  const jump = $<HTMLButtonElement>('#jumpUnansweredBtn');
+  if (jump) jump.hidden = remaining === 0;
+}
+
+/** 現在ページの最初の未回答カードへスクロールし、その先頭の選択肢にフォーカスする。 */
+function jumpToFirstUnanswered(): void {
+  const target = $$('#questionList .question-card').find((card) => {
+    const qid = card.getAttribute('data-qid');
+    return qid != null && state.answers[qid] == null;
+  });
+  if (!target) return;
+  target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  target.querySelector<HTMLInputElement>('input[type="radio"]')?.focus({ preventScroll: true });
 }
 
 function updateNav(): void {
@@ -549,6 +589,7 @@ function init(): void {
     scrollToSel('#diagnosis');
   });
   $('#questionList')?.addEventListener('keydown', handleNumericAnswerKey);
+  $('#jumpUnansweredBtn')?.addEventListener('click', jumpToFirstUnanswered);
   $('#finishBtn')?.addEventListener('click', () => renderResult());
   $('#retakeBtn')?.addEventListener('click', () => {
     clearAll();
