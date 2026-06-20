@@ -706,10 +706,19 @@ a:hover {
   outline-offset: 4px;
   box-shadow: 0 0 0 6px var(--answer-ring);
 }
+.q-check {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+.page-hint {
+  margin: var(--space-5) 0 0;
+  font-size: var(--step--1);
+  color: var(--color-text-mute);
+}
 .question-actions {
   display: flex;
   gap: var(--space-3);
-  margin-top: var(--space-6);
+  margin-top: var(--space-4);
   flex-wrap: wrap;
   align-items: center;
 }
