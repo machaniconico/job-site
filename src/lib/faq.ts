@@ -51,6 +51,11 @@ export function faqPageJsonLd(items: FaqItem[]): FaqPageJsonLd {
   };
 }
 
+/** 文字列配列を「A」「B」「C」のように鉤括弧で連結する（FAQ 回答の列挙表現）。 */
+function quoteList(items: string[]): string {
+  return items.map((item) => `「${item}」`).join('');
+}
+
 /**
  * 性格タイプ詳細ページ向けの FAQ を、タイプ定義から組み立てる。
  *
@@ -60,14 +65,9 @@ export function faqPageJsonLd(items: FaqItem[]): FaqPageJsonLd {
  * 含まないプレーンテキストにする（Google の「可視回答と一致」ポリシー順守）。
  *
  * @param type 対象の性格タイプ
- * @param topJobTitles 「向きやすい仕事 TOP5」の職業名（表示順）。空配列なら仕事の設問は省く
+ * @param topJobTitles 「向きやすい仕事」の職業名（表示順）。空配列なら仕事の設問は省く
  * @returns 表示順そのままの FAQ 配列
  */
-/** 文字列配列を「A」「B」「C」のように鉤括弧で連結する（FAQ 回答の列挙表現）。 */
-function quoteList(items: string[]): string {
-  return items.map((item) => `「${item}」`).join('');
-}
-
 export function buildTypeFaq(
   type: Pick<PersonalityType, 'name' | 'catch' | 'summary' | 'strengths' | 'cautions'>,
   topJobTitles: string[],
