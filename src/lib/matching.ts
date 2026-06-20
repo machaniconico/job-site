@@ -25,12 +25,19 @@ export function matchScore(profile: Profile, occupation: Occupation): number {
 }
 
 // 因子が同方向（ユーザーも職業も高い／低い）に一致したときの根拠文。
-const REASON_HIGH: Record<FactorKey, string> = {
+// N（神経症傾向）の「高い側」は強みとして扱わない:
+//  - 本サイトは一貫して N を情緒安定性として反転表示し、低い側（安定）のみを強みと位置づける。
+//  - 職業性格研究でも高い神経症傾向を職務上の強みとする根拠は乏しい。
+//  - 旧実装は occ N>=60 × ユーザー高 N で高 N 根拠を出していた。N=60 の職業が4件
+//    （graphic_designer / video_creator / web_writer / counselor）あり実際に発火しうるが、
+//    上記の通り「情緒安定性として反転表示」する本サイトの枠組みと矛盾していた。
+// よって REASON_HIGH から N を除外し、N は REASON_LOW（情緒安定）側のみ根拠化する
+//（= 高 N ユーザーが当該職業で受け取っていた高 N 根拠は出さなくなる意図的な挙動変更）。
+const REASON_HIGH: Record<Exclude<FactorKey, 'N'>, string> = {
   O: '好奇心や発想力が求められる場面が多く、開放性の高さが活きます。',
   C: '正確さや計画性が重視され、誠実性の高さが信頼につながります。',
   E: '人と関わり前に出る場面が多く、外向性の高さが強みになります。',
   A: '思いやりや協力が求められ、協調性の高さが信頼関係を築きます。',
-  N: '細やかな感受性や気づきが、この仕事の質を支えます。',
 };
 const REASON_LOW: Record<FactorKey, string> = {
   O: '決まった手順を着実にこなす場面が多く、現実的で地に足のついた進め方が合います。',
@@ -46,15 +53,15 @@ const OCC_LOW = 40;
 
 /**
  * 「なぜこの性格に合うか」を、ユーザーの際立った因子と職業プロファイルの方向一致から生成する。
- * N（神経症傾向）は素スコア基準: 職業が N 低（情緒安定を要する）×ユーザーも低 → 安定の理由、
- * 職業が N 高（繊細さ許容）×ユーザーも高 → 感受性の理由。
+ * N（神経症傾向）は低い側のみ根拠化する: 職業が N 低（情緒安定を要する）×ユーザーも低 → 安定の理由。
+ * 高い側（高 N）は強みとして提示しない（REASON_HIGH に N を持たない。理由は上記コメント参照）。
  */
 export function buildMatchReasons(profile: Profile, occupation: Occupation): string[] {
   const reasons: string[] = [];
   for (const key of FACTOR_KEYS) {
     const userLevel = levelOf(profile.scores[key]);
     const occScore = occupation.profile[key];
-    if (occScore >= OCC_HIGH && userLevel === 'high') {
+    if (key !== 'N' && occScore >= OCC_HIGH && userLevel === 'high') {
       reasons.push(REASON_HIGH[key]);
     } else if (occScore <= OCC_LOW && userLevel === 'low') {
       reasons.push(REASON_LOW[key]);
