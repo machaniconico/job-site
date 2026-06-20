@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import JsonLd from '../../components/JsonLd.astro';
 import { OCCUPATIONS } from '../../data/occupations';
 import { FACTORS, FACTOR_DISPLAY_ORDER } from '../../data/dimensions';
 import { displayScore } from '../../lib/scoring';
@@ -72,12 +73,7 @@ const faqJsonLd = faqPageJsonLd(faqItems);
 ---
 
 <Base title={title} description={description} ogImage={ogImage} breadcrumbs={breadcrumbs}>
-  <script
-    slot="head"
-    type="application/ld+json"
-    is:inline
-    set:html={JSON.stringify(faqJsonLd).replace(/</g, '\\u003c')}
-  />
+  <JsonLd data={faqJsonLd} slot="head" />
   <section class="section">
     <div class="container">
       <article class="panel">

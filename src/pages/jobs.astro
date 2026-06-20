@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import JsonLd from '../components/JsonLd.astro';
 import { OCCUPATIONS } from '../data/occupations';
 import type { Occupation } from '../lib/types';
 import { itemListJsonLd } from '../lib/itemList';
@@ -39,12 +40,7 @@ const listJsonLd = itemListJsonLd(
 ---
 
 <Base title={title} description={description} breadcrumbs={breadcrumbs}>
-  <script
-    slot="head"
-    type="application/ld+json"
-    is:inline
-    set:html={JSON.stringify(listJsonLd).replace(/</g, '\\u003c')}
-  />
+  <JsonLd data={listJsonLd} slot="head" />
   <section class="section">
     <div class="container">
       <article class="panel">
