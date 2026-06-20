@@ -88,6 +88,14 @@
   --pole-pos1-fill:  rgba(101, 163, 13, 0.08);
   --pole-pos2-color: #16a34a;
   --pole-pos2-fill:  rgba(22, 163, 74, 0.08);
+  /* Foreground for the SELECTED circle's digit (fill = --pole-*-color).
+   * Chosen per pole for WCAG AA (>=4.5:1) on that fill; light mode only the
+   * dark indigo neg2 takes white, the rest take ink. See Iter33 contrast audit. */
+  --pole-neg2-on: #ffffff;
+  --pole-neg1-on: #0f172a;
+  --pole-mid-on:  #0f172a;
+  --pole-pos1-on: #0f172a;
+  --pole-pos2-on: #0f172a;
 
   /* Page background wash — 4-point mesh (blue / warm / violet / blue),
    * the full brand palette scattered across the viewport. Visibly tinted
@@ -241,6 +249,12 @@
     --pole-pos1-fill:  rgba(163, 230, 53, 0.20);
     --pole-pos2-color: #4ade80;
     --pole-pos2-fill:  rgba(74, 222, 128, 0.20);
+    /* Dark fills are light pastels → ink digit for all poles (>=5.9:1). */
+    --pole-neg2-on: #0f172a;
+    --pole-neg1-on: #0f172a;
+    --pole-mid-on:  #0f172a;
+    --pole-pos1-on: #0f172a;
+    --pole-pos2-on: #0f172a;
 
     --shadow-sm:      0 2px 10px rgba(0, 0, 0, 0.34);
     --shadow-md:      0 10px 34px rgba(0, 0, 0, 0.42);
@@ -288,6 +302,12 @@
   --pole-pos1-fill:  rgba(163, 230, 53, 0.20);
   --pole-pos2-color: #4ade80;
   --pole-pos2-fill:  rgba(74, 222, 128, 0.20);
+  /* Dark fills are light pastels → ink digit for all poles (>=5.9:1). */
+  --pole-neg2-on: #0f172a;
+  --pole-neg1-on: #0f172a;
+  --pole-mid-on:  #0f172a;
+  --pole-pos1-on: #0f172a;
+  --pole-pos2-on: #0f172a;
 
   --shadow-sm:      0 2px 10px rgba(0, 0, 0, 0.34);
   --shadow-md:      0 10px 34px rgba(0, 0, 0, 0.42);

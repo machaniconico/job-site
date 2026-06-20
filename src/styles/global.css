@@ -640,6 +640,10 @@ a:hover {
   --answer-color: var(--color-primary);
   --answer-fill: var(--color-primary-soft);
   --answer-hover: var(--color-primary-soft);
+  /* Fallback only; every rendered option carries a known [data-pole] that
+   * overrides this with an AA-verified --pole-*-on. Unreached for the closed
+   * 5-element pole set (see ANSWER_OPTIONS in app.ts). */
+  --answer-on: #fff;
   --answer-ring: color-mix(in srgb, var(--answer-color) 32%, transparent);
   display: grid;
   place-items: center;
@@ -658,30 +662,35 @@ a:hover {
   --answer-color: var(--pole-neg2-color);
   --answer-fill: var(--pole-neg2-fill);
   --answer-hover: color-mix(in srgb, var(--pole-neg2-fill) 91.304%, var(--pole-neg2-color) 8.696%);
+  --answer-on: var(--pole-neg2-on);
 }
 .answer-circle[data-pole='neg1'] {
   --answer-size: clamp(30px, 9vw, 40px);
   --answer-color: var(--pole-neg1-color);
   --answer-fill: var(--pole-neg1-fill);
   --answer-hover: color-mix(in srgb, var(--pole-neg1-fill) 91.304%, var(--pole-neg1-color) 8.696%);
+  --answer-on: var(--pole-neg1-on);
 }
 .answer-circle[data-pole='mid'] {
   --answer-size: clamp(26px, 7.5vw, 34px);
   --answer-color: var(--pole-mid-color);
   --answer-fill: var(--pole-mid-fill);
   --answer-hover: color-mix(in srgb, var(--pole-mid-fill) 90.909%, var(--pole-mid-color) 9.091%);
+  --answer-on: var(--pole-mid-on);
 }
 .answer-circle[data-pole='pos1'] {
   --answer-size: clamp(30px, 9vw, 40px);
   --answer-color: var(--pole-pos1-color);
   --answer-fill: var(--pole-pos1-fill);
   --answer-hover: color-mix(in srgb, var(--pole-pos1-fill) 91.304%, var(--pole-pos1-color) 8.696%);
+  --answer-on: var(--pole-pos1-on);
 }
 .answer-circle[data-pole='pos2'] {
   --answer-size: clamp(34px, 11vw, 48px);
   --answer-color: var(--pole-pos2-color);
   --answer-fill: var(--pole-pos2-fill);
   --answer-hover: color-mix(in srgb, var(--pole-pos2-fill) 91.304%, var(--pole-pos2-color) 8.696%);
+  --answer-on: var(--pole-pos2-on);
 }
 .answer-digit {
   color: var(--color-text-soft);
@@ -695,11 +704,11 @@ a:hover {
 .answer-choice input:checked + .answer-circle {
   background: var(--answer-color);
   box-shadow: 0 0 0 4px var(--answer-ring);
-  color: #fff;
+  color: var(--answer-on);
   transform: scale(1.08);
 }
 .answer-choice input:checked + .answer-circle .answer-digit {
-  color: #fff;
+  color: var(--answer-on);
 }
 .answer-choice input:focus-visible + .answer-circle {
   outline: 3px solid var(--answer-color);
