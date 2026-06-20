@@ -1,6 +1,7 @@
 ---
 import '../styles/tokens.css';
 import '../styles/global.css';
+import JsonLd from '../components/JsonLd.astro';
 import { breadcrumbListJsonLd, type Breadcrumb } from '../lib/breadcrumbs';
 import { withBase } from '../lib/url';
 
@@ -98,16 +99,8 @@ const isCurrent = (href: string) => normalizePath(Astro.url.pathname) === normal
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
     <meta name="twitter:image:alt" content={title} />
-    <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')}></script>
-    {
-      breadcrumbJsonLd && (
-        <script
-          type="application/ld+json"
-          is:inline
-          set:html={JSON.stringify(breadcrumbJsonLd).replace(/</g, '\\u003c')}
-        />
-      )
-    }
+    <JsonLd data={jsonLd} />
+    {breadcrumbJsonLd && <JsonLd data={breadcrumbJsonLd} />}
     <slot name="head" />
   </head>
   <body>

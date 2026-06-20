@@ -1,0 +1,21 @@
+---
+/**
+ * schema.org 構造化データ（JSON-LD）を1つ出力する共通コンポーネント。
+ *
+ * `<script type="application/ld+json">` への JSON 直列化と、`</script>` による
+ * スクリプト要素ブレイクアウトを防ぐ `<` のエスケープ（`<` 化）を1箇所に
+ * 集約する。各ページ／レイアウトはオブジェクトを渡すだけでよい。
+ *
+ * head に直接置くほか、ページから `<JsonLd data={...} slot="head" />` として
+ * Base レイアウトの `head` スロットへ流し込む用途も想定する。
+ */
+interface Props {
+  /** schema.org オブジェクト（直列化可能な任意の構造化データ）。 */
+  data: unknown;
+}
+
+const { data } = Astro.props;
+const json = JSON.stringify(data).replace(/</g, '\\u003c');
+---
+
+<script type="application/ld+json" is:inline set:html={json} />
