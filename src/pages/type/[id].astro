@@ -6,6 +6,7 @@ import { FACTORS, FACTOR_DISPLAY_ORDER } from '../../data/dimensions';
 import { rankOccupations } from '../../lib/matching';
 import { displayScore } from '../../lib/scoring';
 import { expectedScoresFromPattern } from '../../lib/typing';
+import { buildTypeFaq, faqPageJsonLd } from '../../lib/faq';
 import { withBase } from '../../lib/url';
 import type { FactorKey, PersonalityType, Profile } from '../../lib/types';
 
@@ -83,9 +84,22 @@ const breadcrumbs = [
   { name: 'タイプ一覧', href: withBase('types/') },
   { name: type.name, href: withBase(`type/${type.id}/`) },
 ];
+
+// ---- FAQ（可視アコーディオン + FAQPage 構造化データで同じ配列を共有）----
+const faqItems = buildTypeFaq(
+  type,
+  topJobs.map((job) => job.title),
+);
+const faqJsonLd = faqPageJsonLd(faqItems);
 ---
 
 <Base title={title} description={description} ogImage={ogImage} breadcrumbs={breadcrumbs}>
+  <script
+    slot="head"
+    type="application/ld+json"
+    is:inline
+    set:html={JSON.stringify(faqJsonLd).replace(/</g, '\\u003c')}
+  />
   <section class="section">
     <div class="container">
       <article class="panel">
@@ -207,6 +221,21 @@ const breadcrumbs = [
           </article>
         )
       }
+
+      <article class="panel faq" style="margin-top: var(--space-5)">
+        <p class="eyebrow">FAQ</p>
+        <h2>「{type.name}」についてよくある質問</h2>
+        <div class="faq-list">
+          {
+            faqItems.map((item) => (
+              <details class="faq-item">
+                <summary>{item.question}</summary>
+                <p>{item.answer}</p>
+              </details>
+            ))
+          }
+        </div>
+      </article>
     </div>
   </section>
 </Base>
