@@ -129,7 +129,7 @@ function show(sel: string, visible: boolean): void {
   if (el) el.hidden = !visible;
 }
 function scrollToSel(sel: string): void {
-  $(sel)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  $(sel)?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
 }
 
 /** 詳細ページの絶対URL（location.origin + BASE_URL 正規化 + /<segment>/<id>/）。 */
@@ -220,6 +220,11 @@ async function shareResultLink(): Promise<void> {
 
 function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/** scrollIntoView behavior that honors the user's reduced-motion preference. */
+function scrollBehavior(): ScrollBehavior {
+  return prefersReducedMotion() ? 'auto' : 'smooth';
 }
 
 function easeOutCubic(progress: number): number {
@@ -542,7 +547,7 @@ function jumpToFirstUnanswered(): void {
     (card) => card.getAttribute('data-qid') === qid,
   );
   if (!target) return;
-  target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  target.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
   target.querySelector<HTMLInputElement>('input[type="radio"]')?.focus({ preventScroll: true });
 }
 

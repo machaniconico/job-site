@@ -1379,6 +1379,9 @@ a:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   #result:not([hidden]) .panel,
   #result:not([hidden]) .bar-row,
   #result:not([hidden]) .job-card,
