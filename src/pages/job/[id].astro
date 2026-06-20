@@ -4,6 +4,7 @@ import { OCCUPATIONS } from '../../data/occupations';
 import { FACTORS, FACTOR_DISPLAY_ORDER } from '../../data/dimensions';
 import { displayScore } from '../../lib/scoring';
 import { topTypes } from '../../lib/typing';
+import { buildJobFaq, faqPageJsonLd } from '../../lib/faq';
 import { withBase } from '../../lib/url';
 import type { Occupation, Profile } from '../../lib/types';
 
@@ -61,9 +62,22 @@ const profileLike: Profile = {
   generatedAt: '',
 };
 const matchingTypes = topTypes(profileLike, 3);
+
+// ---- FAQ（可視アコーディオン + FAQPage 構造化データで同じ配列を共有）----
+const faqItems = buildJobFaq(
+  occupation,
+  matchingTypes.map((match) => match.type.name),
+);
+const faqJsonLd = faqPageJsonLd(faqItems);
 ---
 
 <Base title={title} description={description} ogImage={ogImage} breadcrumbs={breadcrumbs}>
+  <script
+    slot="head"
+    type="application/ld+json"
+    is:inline
+    set:html={JSON.stringify(faqJsonLd).replace(/</g, '\\u003c')}
+  />
   <section class="section">
     <div class="container">
       <article class="panel">
@@ -150,6 +164,21 @@ const matchingTypes = topTypes(profileLike, 3);
           </article>
         )
       }
+
+      <article class="panel faq" style="margin-top: var(--space-5)">
+        <p class="eyebrow">FAQ</p>
+        <h2>「{occupation.title}」についてよくある質問</h2>
+        <div class="faq-list">
+          {
+            faqItems.map((item) => (
+              <details class="faq-item">
+                <summary>{item.question}</summary>
+                <p>{item.answer}</p>
+              </details>
+            ))
+          }
+        </div>
+      </article>
 
       <article class="panel job-detail-cta" style="margin-top: var(--space-5)">
         <p class="eyebrow">あなたの適性を診断する</p>
