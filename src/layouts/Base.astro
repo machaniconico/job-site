@@ -86,12 +86,18 @@ const isCurrent = (href: string) => normalizePath(Astro.url.pathname) === normal
     <link rel="icon" href={withBase('favicon.svg')} type="image/svg+xml" />
     <link rel="manifest" href={withBase('site.webmanifest')} />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="性格診断 | Big Five" />
+    <meta property="og:locale" content="ja_JP" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={Astro.url} />
     <meta property="og:image" content={ogImage} />
+    <meta property="og:image:alt" content={title} />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={title} />
     <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')}></script>
     {
       breadcrumbJsonLd && (
