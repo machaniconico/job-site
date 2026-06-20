@@ -2,6 +2,7 @@
 import '../styles/tokens.css';
 import '../styles/global.css';
 import { breadcrumbListJsonLd, type Breadcrumb } from '../lib/breadcrumbs';
+import { withBase } from '../lib/url';
 
 interface Props {
   title?: string;
@@ -19,9 +20,6 @@ const {
   breadcrumbs,
 } = Astro.props;
 
-const base = import.meta.env.BASE_URL;
-// 末尾スラッシュを正規化して内部リンクを組み立てる
-const withBase = (path: string) => `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
 const home = withBase('');
 const typesHref = withBase('types');
 const jobsHref = withBase('jobs');
