@@ -1382,6 +1382,20 @@ a:hover {
   html {
     scroll-behavior: auto;
   }
+  /*
+   * モーション過敏設定への包括対応（web.dev / Andy Bell 推奨パターン）。
+   * 結果の入場アニメは no-preference でゲート済みだが、ボタンやカードの hover で
+   * 走る transform トランジション（操作由来のモーション）は個別指定が漏れがち。
+   * 全要素のアニメ/トランジションを実質ゼロ時間にして、状態変化は保ちつつ
+   * 知覚されるモーションだけを消す。下の限定ルールは入場状態の確定用に温存する。
+   */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
   #result:not([hidden]) .panel,
   #result:not([hidden]) .bar-row,
   #result:not([hidden]) .job-card,
