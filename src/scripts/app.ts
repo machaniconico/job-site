@@ -482,39 +482,65 @@ function renderQuestions(): void {
   updateUnansweredState();
 }
 
+/** 全設問の中で最初に未回答な設問の通し番号（0始まり）。全問回答済みなら -1。 */
+function firstUnansweredIndex(): number {
+  return QUESTIONS.findIndex((q) => state.answers[q.id] == null);
+}
+
 /**
- * 現在ページ内の未回答状況を反映する。回答済みカードに ✓ を出し、
- * 「あと N 問」のヒント（aria-live）と「未回答へ移動」ボタンの表示/非表示を更新する。
- * 採点・判定には一切関与しない、表示専用の補助。
+ * 未回答状況を反映する。回答済みカードに ✓ を出し、ヒント（aria-live）と
+ * 「未回答の設問へ」ボタンの表示/非表示を更新する。ヒントは現ページだけでなく
+ * 「他ページの未回答」も案内し、最終ページが埋まっていても他ページに穴があると
+ * 結果へ進めない行き止まりを防ぐ。採点・判定には一切関与しない、表示専用の補助。
  */
 function updateUnansweredState(): void {
   const cards = $$('#questionList .question-card');
-  let remaining = 0;
+  let pageRemaining = 0;
   cards.forEach((card) => {
     const qid = card.getAttribute('data-qid');
     const answered = qid != null && state.answers[qid] != null;
-    if (!answered) remaining += 1;
+    if (!answered) pageRemaining += 1;
     const check = card.querySelector('[data-q-check]');
     if (check instanceof HTMLElement) check.hidden = !answered;
   });
 
+  const totalRemaining = QUESTION_COUNT - answeredCount();
+  const otherRemaining = totalRemaining - pageRemaining; // 現ページ以外の未回答数
+
   const hint = $('#pageHint');
   if (hint) {
-    hint.textContent =
-      remaining > 0
-        ? `このページはあと ${remaining} 問で次に進めます。`
-        : 'このページは回答済みです。次へ進めましょう。';
+    if (pageRemaining > 0) {
+      hint.textContent = `このページはあと ${pageRemaining} 問で次に進めます。`;
+    } else if (otherRemaining > 0) {
+      hint.textContent = `他のページに未回答が ${otherRemaining} 問あります。「未回答の設問へ」で確認できます。`;
+    } else {
+      hint.textContent = 'すべて回答済みです。結果を見られます。';
+    }
   }
+  // どのページであれ、未回答が1問でも残っていれば導線を出す。
   const jump = $<HTMLButtonElement>('#jumpUnansweredBtn');
-  if (jump) jump.hidden = remaining === 0;
+  if (jump) jump.hidden = totalRemaining === 0;
 }
 
-/** 現在ページの最初の未回答カードへスクロールし、その先頭の選択肢にフォーカスする。 */
+/**
+ * 全設問のうち最初の未回答へ移動する。別ページにある場合はそのページへ送ってから、
+ * 該当カードへスクロールし先頭の選択肢にフォーカスする。
+ */
 function jumpToFirstUnanswered(): void {
-  const target = $$('#questionList .question-card').find((card) => {
-    const qid = card.getAttribute('data-qid');
-    return qid != null && state.answers[qid] == null;
-  });
+  const index = firstUnansweredIndex();
+  if (index < 0) return;
+
+  const targetPage = Math.floor(index / PAGE_SIZE);
+  if (targetPage !== state.page) {
+    state.page = targetPage;
+    save();
+    renderQuestions();
+  }
+
+  const qid = QUESTIONS[index].id;
+  const target = $$('#questionList .question-card').find(
+    (card) => card.getAttribute('data-qid') === qid,
+  );
   if (!target) return;
   target.scrollIntoView({ behavior: 'smooth', block: 'center' });
   target.querySelector<HTMLInputElement>('input[type="radio"]')?.focus({ preventScroll: true });
