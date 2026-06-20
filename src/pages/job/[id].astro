@@ -3,8 +3,9 @@ import Base from '../../layouts/Base.astro';
 import { OCCUPATIONS } from '../../data/occupations';
 import { FACTORS, FACTOR_DISPLAY_ORDER } from '../../data/dimensions';
 import { displayScore } from '../../lib/scoring';
+import { topTypes } from '../../lib/typing';
 import { withBase } from '../../lib/url';
-import type { Occupation } from '../../lib/types';
+import type { Occupation, Profile } from '../../lib/types';
 
 export function getStaticPaths() {
   return OCCUPATIONS.map((occupation) => ({
@@ -46,6 +47,20 @@ const breadcrumbs = [
   { name: '仕事一覧', href: withBase('jobs/') },
   { name: occupation.title, href: withBase(`job/${occupation.id}/`) },
 ];
+
+// この職業の期待プロファイルに近い性格タイプ TOP3（type→job リンクの逆向き導線）。
+// topTypes は profile.scores しか参照しないため、他フィールドはダミーで Profile 互換にする。
+const profileLike: Profile = {
+  scores: occupation.profile,
+  levels: { O: 'mid', C: 'mid', E: 'mid', A: 'mid', N: 'mid' },
+  answeredCount: 0,
+  totalQuestions: 0,
+  completionRate: 0,
+  confidence: '低',
+  confidenceReason: '',
+  generatedAt: '',
+};
+const matchingTypes = topTypes(profileLike, 3);
 ---
 
 <Base title={title} description={description} ogImage={ogImage} breadcrumbs={breadcrumbs}>
@@ -111,6 +126,30 @@ const breadcrumbs = [
           }
         </div>
       </article>
+
+      {
+        matchingTypes.length > 0 && (
+          <article class="panel" style="margin-top: var(--space-5)">
+            <p class="eyebrow">この仕事に向きやすい性格タイプ</p>
+            <p class="job-detail-note">
+              {occupation.title}で活躍する人の傾向に近い性格タイプです。タイプのページから特徴・強み・気をつけたい点を読めます（あくまで傾向の目安です）。
+            </p>
+            <div class="type-related">
+              {matchingTypes.map((match) => (
+                <a class="type-related-card" href={withBase(`type/${match.type.id}/`)}>
+                  <span class="type-related-icon" aria-hidden="true">
+                    {match.type.icon}
+                  </span>
+                  <span class="type-related-body">
+                    <span class="type-related-name">{match.type.name}</span>
+                    <span class="type-related-catch">{match.type.catch}</span>
+                  </span>
+                </a>
+              ))}
+            </div>
+          </article>
+        )
+      }
 
       <article class="panel job-detail-cta" style="margin-top: var(--space-5)">
         <p class="eyebrow">あなたの適性を診断する</p>
