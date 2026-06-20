@@ -153,6 +153,9 @@ const previewCards = [
 
   <section class="section" id="result" hidden>
     <div class="container">
+      <div class="notice-box" id="sharedNotice" role="note" tabindex="-1" hidden>
+        <strong>共有された診断結果を見ています。</strong> これは誰かが共有した結果です。あなた自身の診断は、ページ上部の「さっそく始める」または下の「もう一度」から行えます。
+      </div>
       <article class="panel">
         <p class="eyebrow">あなたの結果</p>
         <p class="result-greeting">お疲れさま！じっくり答えてくれてありがとう <span aria-hidden="true">🎉</span> あなたの結果はこちら。</p>
@@ -175,6 +178,7 @@ const previewCards = [
       </article>
       <div class="result-actions">
         <button class="btn btn-secondary" id="shareBtn" type="button">結果をXでシェア</button>
+        <button class="btn btn-secondary" id="copyResultLinkBtn" type="button">結果リンクをコピー</button>
         <button class="btn btn-secondary" id="saveImageBtn" type="button">画像で保存</button>
         <button class="btn btn-ghost" id="copyBtn" type="button">要約をコピー</button>
         <button class="btn btn-ghost" id="jsonBtn" type="button">結果JSONを保存</button>

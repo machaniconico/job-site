@@ -9,6 +9,7 @@ import { OCCUPATIONS } from '../data/occupations';
 import { computeProfile, computeFacetScores, displayScore } from '../lib/scoring';
 import { determineType, topTypes, expectedScoresFromPattern } from '../lib/typing';
 import { rankOccupations } from '../lib/matching';
+import { encodeAnswers, decodeAnswers } from '../lib/resultShare';
 import { createShareCardBlob } from './shareImage';
 import type {
   Answers,
@@ -24,6 +25,8 @@ import type {
 const STORAGE_KEY = 'personality-quiz-v1';
 const PAGE_SIZE = 5;
 const TOTAL_PAGES = Math.ceil(QUESTIONS.length / PAGE_SIZE);
+/** 共有コードのエンコード/デコードに使う設問id（出題順）。 */
+const QUESTION_IDS = QUESTIONS.map((q) => q.id);
 
 const ANSWER_OPTIONS: { value: LikertValue; label: string; pole: string }[] = [
   { value: 1, label: '違う', pole: 'neg2' },
@@ -118,6 +121,8 @@ function clearAll(): void {
   } catch {
     /* noop */
   }
+  // 共有リンクで開いていた場合、自分の診断に移るのでハッシュを消す。
+  clearShareHash();
 }
 function show(sel: string, visible: boolean): void {
   const el = $(sel);
@@ -141,6 +146,33 @@ function typePageUrl(typeId: string): string {
 /** 職業詳細ページの絶対URL。 */
 function jobPageUrl(jobId: string): string {
   return pageUrl('job', jobId);
+}
+
+/** URL ハッシュ（#r=...）から共有コードを取り出す。無ければ null。 */
+function readSharedCode(): string | null {
+  const match = /[#&]r=([^&]+)/.exec(location.hash);
+  if (!match) return null;
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return null;
+  }
+}
+
+/** 共有結果のリンク（現在ページ + #r=<回答コード>）を組み立てる。 */
+function buildShareLink(): string {
+  const code = encodeAnswers(state.answers, QUESTION_IDS);
+  return `${location.origin}${location.pathname}${location.search}#r=${code}`;
+}
+
+/** 残った共有ハッシュを URL から消す（自分の診断に入るときに呼ぶ）。 */
+function clearShareHash(): void {
+  if (!location.hash) return;
+  try {
+    history.replaceState(null, '', location.pathname + location.search);
+  } catch {
+    /* history 不可でも致命的でないため無視 */
+  }
 }
 
 function prefersReducedMotion(): boolean {
@@ -566,7 +598,12 @@ function init(): void {
     show('#resetBtn', false);
     startDiagnosis();
   });
-  $('#resumeBtn')?.addEventListener('click', () => startDiagnosis());
+  $('#resumeBtn')?.addEventListener('click', () => {
+    // 共有リンク表示で state.answers がメモリ上だけ差し替わっている可能性があるため、
+    // 自分の保存済み進捗を読み直してから再開する（共有者の回答を引き継がない）。
+    load();
+    startDiagnosis();
+  });
   $('#resetBtn')?.addEventListener('click', () => {
     if (confirm('回答をリセットしますか？')) {
       clearAll();
@@ -618,6 +655,23 @@ function init(): void {
     const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(summaryText())}&url=${encodeURIComponent(url)}`;
     window.open(intent, '_blank', 'noopener');
   });
+  $('#copyResultLinkBtn')?.addEventListener('click', async () => {
+    // 自分の回答そのものをハッシュに載せた「結果が復元できるリンク」をコピーする。
+    if (!lastProfile) return;
+    const btn = $('#copyResultLinkBtn');
+    try {
+      await navigator.clipboard.writeText(buildShareLink());
+      if (btn) {
+        const original = btn.textContent;
+        btn.textContent = 'リンクをコピーしました';
+        setTimeout(() => {
+          btn.textContent = original;
+        }, 1500);
+      }
+    } catch {
+      alert('リンクのコピーに失敗しました。お使いのブラウザの設定をご確認ください。');
+    }
+  });
   $('#saveImageBtn')?.addEventListener('click', async () => {
     if (!lastProfile || !lastType) return;
     const btn = $<HTMLButtonElement>('#saveImageBtn');
@@ -648,6 +702,19 @@ function init(): void {
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     downloadBlob(blob, `personality-result-${new Date().toISOString().slice(0, 10)}.json`);
   });
+
+  // 共有リンク（#r=...）で開かれていれば、保存済み進捗には触れずに結果を表示する。
+  // state.answers は表示用にメモリ上だけ差し替え、save() しないので localStorage は無傷。
+  const sharedAnswers = decodeAnswers(readSharedCode() ?? '', QUESTION_IDS);
+  if (sharedAnswers && Object.keys(sharedAnswers).length > 0) {
+    state.answers = sharedAnswers;
+    show('#resumeBtn', false);
+    show('#resetBtn', false);
+    show('#sharedNotice', true);
+    renderResult();
+    // スクリーンリーダーに「共有結果を見ている」ことを伝えるため通知へフォーカスする。
+    $('#sharedNotice')?.focus({ preventScroll: true });
+  }
 }
 
 if (document.readyState === 'loading') {
