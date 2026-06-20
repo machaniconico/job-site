@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { buildTypeFaq, faqPageJsonLd } from './faq';
+import { buildJobFaq, buildTypeFaq, faqPageJsonLd } from './faq';
 import { PERSONALITY_TYPES, BALANCED_TYPE } from '../data/personalityTypes';
+import { OCCUPATIONS } from '../data/occupations';
 
 describe('faqPageJsonLd', () => {
   const sample = [
@@ -99,6 +100,50 @@ describe('buildTypeFaq', () => {
       const ld = faqPageJsonLd(faq);
       expect(ld.mainEntity).toHaveLength(faq.length);
       faq.forEach((item, i) => {
+        expect(ld.mainEntity[i].name).toBe(item.question);
+        expect(ld.mainEntity[i].acceptedAnswer.text).toBe(item.answer);
+      });
+    }
+  });
+});
+
+describe('buildJobFaq', () => {
+  const job = OCCUPATIONS[0];
+  const typeNames = ['探究者', '革新者'];
+
+  it('指定ありは4問（仕事/スキル/注意/向く性格タイプ）を表示順で返す', () => {
+    const faq = buildJobFaq(job, typeNames);
+    expect(faq).toHaveLength(4);
+    expect(faq[0].question).toContain('どんな仕事');
+    expect(faq[1].question).toContain('スキル');
+    expect(faq[2].question).toContain('気をつけたい');
+    expect(faq[3].question).toContain('性格タイプ');
+  });
+
+  it('質問に職業名、回答に職業の実データと性格タイプ名が埋まる', () => {
+    const faq = buildJobFaq(job, typeNames);
+    for (const item of faq) expect(item.question).toContain(job.title);
+    expect(faq[0].answer).toContain(job.description);
+    expect(faq[0].answer).toContain(job.category);
+    expect(faq[1].answer).toContain(job.skillThemes[0]);
+    expect(faq[2].answer).toContain(job.cautions[0]);
+    expect(faq[3].answer).toContain(typeNames[0]);
+  });
+
+  it('性格タイプ名が空なら該当設問を省き3問になる', () => {
+    const faq = buildJobFaq(job, []);
+    expect(faq).toHaveLength(3);
+    expect(faq.some((item) => item.question.includes('性格タイプ'))).toBe(false);
+  });
+
+  it('全60職業で生成でき、HTMLを含まず FAQPage JSON-LD に矛盾なく流せる', () => {
+    for (const occ of OCCUPATIONS) {
+      const faq = buildJobFaq(occ, typeNames);
+      const ld = faqPageJsonLd(faq);
+      expect(ld.mainEntity).toHaveLength(faq.length);
+      faq.forEach((item, i) => {
+        expect(item.answer).not.toMatch(/<[^>]+>/);
+        expect(item.answer).not.toContain('「」');
         expect(ld.mainEntity[i].name).toBe(item.question);
         expect(ld.mainEntity[i].acceptedAnswer.text).toBe(item.answer);
       });

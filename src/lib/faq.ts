@@ -5,7 +5,7 @@
  * ページ側は {@link FaqItem} の配列を1つ用意すればよい。
  */
 
-import type { PersonalityType } from './types';
+import type { Occupation, PersonalityType } from './types';
 
 export interface FaqItem {
   /** 質問文 */
@@ -51,6 +51,11 @@ export function faqPageJsonLd(items: FaqItem[]): FaqPageJsonLd {
   };
 }
 
+/** 文字列配列を「A」「B」「C」のように鉤括弧で連結する（FAQ 回答の列挙表現）。 */
+function quoteList(items: string[]): string {
+  return items.map((item) => `「${item}」`).join('');
+}
+
 /**
  * 性格タイプ詳細ページ向けの FAQ を、タイプ定義から組み立てる。
  *
@@ -60,7 +65,7 @@ export function faqPageJsonLd(items: FaqItem[]): FaqPageJsonLd {
  * 含まないプレーンテキストにする（Google の「可視回答と一致」ポリシー順守）。
  *
  * @param type 対象の性格タイプ
- * @param topJobTitles 「向きやすい仕事 TOP5」の職業名（表示順）。空配列なら仕事の設問は省く
+ * @param topJobTitles 「向きやすい仕事」の職業名（表示順）。空配列なら仕事の設問は省く
  * @returns 表示順そのままの FAQ 配列
  */
 export function buildTypeFaq(
@@ -68,7 +73,7 @@ export function buildTypeFaq(
   topJobTitles: string[],
 ): FaqItem[] {
   const { name } = type;
-  const quote = (items: string[]) => items.map((item) => `「${item}」`).join('');
+  const quote = quoteList;
 
   const items: FaqItem[] = [
     {
@@ -97,6 +102,55 @@ export function buildTypeFaq(
     items.push({
       question: `「${name}」タイプに向いている仕事は何ですか？`,
       answer: `${quote(topJobTitles)}などと相性が良い傾向があります。マッチ度はあくまで目安で、当てはまらなくても活躍できます。`,
+    });
+  }
+
+  return items;
+}
+
+/**
+ * 職業詳細ページ向けの FAQ を、職業定義から組み立てる。
+ *
+ * 「{職業}に向いている人」で検索して着地したユーザーの問い（どんな仕事か /
+ * 活かせるスキル / 気をつけたい点 / 向く性格タイプ）を、職業の既存フィールドだけで
+ * 埋める。{@link buildTypeFaq} と同じく可視アコーディオンと FAQPage JSON-LD に
+ * 同じ配列を渡すため、回答は HTML を含まないプレーンテキストにする。
+ *
+ * @param occupation 対象の職業
+ * @param matchingTypeNames 「向きやすい性格タイプ TOP3」の名前（表示順）。空なら設問を省く
+ * @returns 表示順そのままの FAQ 配列
+ */
+export function buildJobFaq(
+  occupation: Pick<Occupation, 'title' | 'category' | 'description' | 'skillThemes' | 'cautions'>,
+  matchingTypeNames: string[],
+): FaqItem[] {
+  const { title } = occupation;
+
+  const items: FaqItem[] = [
+    {
+      question: `「${title}」とはどんな仕事ですか？`,
+      answer: `${occupation.category}の仕事です。${occupation.description}`,
+    },
+  ];
+
+  if (occupation.skillThemes.length > 0) {
+    items.push({
+      question: `「${title}」に活かせるスキルは何ですか？`,
+      answer: `${quoteList(occupation.skillThemes)}などが活きやすい仕事です。`,
+    });
+  }
+
+  if (occupation.cautions.length > 0) {
+    items.push({
+      question: `「${title}」で気をつけたい点はありますか？`,
+      answer: `${quoteList(occupation.cautions)}などが挙げられます。向き不向きというより、知っておくと備えやすいポイントです。`,
+    });
+  }
+
+  if (matchingTypeNames.length > 0) {
+    items.push({
+      question: `「${title}」に向いている性格タイプは何ですか？`,
+      answer: `${quoteList(matchingTypeNames)}などが、活躍する人の傾向に近い性格タイプです。あくまで目安で、当てはまらなくても活躍できます。`,
     });
   }
 
