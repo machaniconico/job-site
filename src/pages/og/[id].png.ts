@@ -9,7 +9,6 @@ const height = 630;
 const allTypes = [...PERSONALITY_TYPES, BALANCED_TYPE];
 const fontFamily =
   'Hiragino Sans, Hiragino Kaku Gothic ProN, Yu Gothic, Meiryo, system-ui, sans-serif';
-const emojiFontFamily = 'Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif';
 
 export const getStaticPaths = (() =>
   allTypes.map((type) => ({
@@ -89,7 +88,7 @@ function buildSvg(type: PersonalityType): string {
     <path d="M138 72c62 28 104 82 122 162c-88-8-154-40-196-96c-22-30-28-58-16-84c26-6 56 0 90 18Z" fill="#2563eb" opacity="0.88"/>
     <path d="M160 236c52-42 112-60 180-50c-20 74-66 126-138 154c-34 14-66 14-94 0c0-38 18-72 52-104Z" fill="#7c3aed" opacity="0.84"/>
     <circle cx="164" cy="164" r="96" fill="#ffffff" opacity="0.90"/>
-    <text x="164" y="200" text-anchor="middle" font-family="${emojiFontFamily}" font-size="${iconFontSize(type.icon)}">${escapeXml(type.icon)}</text>
+    <text x="164" y="206" text-anchor="middle" font-family="${fontFamily}" font-size="116" font-weight="800" fill="#2563eb">${escapeXml(monogram(type.name))}</text>
   </g>
 </svg>`;
 }
@@ -114,8 +113,14 @@ function truncateText(text: string, maxLength: number): string {
   return `${chars.slice(0, maxLength - 1).join('')}…`;
 }
 
-function iconFontSize(icon: string): number {
-  return Array.from(icon).length > 1 ? 118 : 132;
+/**
+ * OG カードの円内に置く一文字モノグラム。タイプ名の先頭文字を使う。
+ * 絵文字アイコン（type.icon）は OG をラスタライズする sharp/librsvg に
+ * 絵文字フォントが無く豆腐（コードポイント）化するため、確実に描画できる
+ * 日本語フォントの頭文字で代替する（画面上の絵文字表示はブラウザ任せで不変）。
+ */
+function monogram(name: string): string {
+  return Array.from(name)[0] ?? '・';
 }
 
 function escapeXml(value: string): string {
