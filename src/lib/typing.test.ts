@@ -31,10 +31,10 @@ function profileWith(high: FactorKey[], low: FactorKey[] = []): Profile {
 }
 
 describe('type catalog integrity', () => {
-  it('has 20 named types + a balanced fallback, all with unique ids', () => {
-    expect(PERSONALITY_TYPES).toHaveLength(20);
+  it('has 24 named types + a balanced fallback, all with unique ids', () => {
+    expect(PERSONALITY_TYPES).toHaveLength(24);
     const ids = PERSONALITY_TYPES.map((t) => t.id).concat(BALANCED_TYPE.id);
-    expect(new Set(ids).size).toBe(21);
+    expect(new Set(ids).size).toBe(25);
   });
   it('every type icon is unique', () => {
     const icons = [...PERSONALITY_TYPES, BALANCED_TYPE].map((t) => t.icon);
@@ -109,9 +109,30 @@ describe('determineType', () => {
     expect(match.fitScore).toBeGreaterThanOrEqual(BALANCED_FALLBACK_THRESHOLD);
   });
 
-  it('rankTypes returns all 20 sorted descending by fit', () => {
+  it('maps low E + low N to the newly added Sage', () => {
+    const match = determineType(profileWith([], ['E', 'N']));
+    expect(match.type.id).toBe('sage');
+    expect(match.fitScore).toBeGreaterThanOrEqual(BALANCED_FALLBACK_THRESHOLD);
+  });
+
+  it('maps high E + high C to the newly added Driver', () => {
+    const match = determineType(profileWith(['E', 'C']));
+    expect(match.type.id).toBe('driver');
+  });
+
+  it('maps high C + high N to the newly added Prudent', () => {
+    const match = determineType(profileWith(['C', 'N']));
+    expect(match.type.id).toBe('prudent');
+  });
+
+  it('maps high E + low A to the newly added Debater', () => {
+    const match = determineType(profileWith(['E'], ['A']));
+    expect(match.type.id).toBe('debater');
+  });
+
+  it('rankTypes returns all 24 sorted descending by fit', () => {
     const ranked = rankTypes(profileWith(['O', 'E']));
-    expect(ranked).toHaveLength(20);
+    expect(ranked).toHaveLength(24);
     for (let i = 1; i < ranked.length; i++) {
       expect(ranked[i - 1].fitScore).toBeGreaterThanOrEqual(ranked[i].fitScore);
     }
