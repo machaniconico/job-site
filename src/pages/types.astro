@@ -10,6 +10,11 @@ const home = withBase('');
 
 const allTypes: PersonalityType[] = [...PERSONALITY_TYPES, BALANCED_TYPE];
 
+// クライアント検索用の正規化済みインデックス（タイプ名 + 一言キャッチ）。
+// typeSearch.ts の normalize() と同じ規則（全角空白→半角・小文字化）で生成する。
+const searchIndex = (type: PersonalityType): string =>
+  [type.name, type.catch].join(' ').replace(/　/g, ' ').toLowerCase();
+
 const title = '性格タイプ一覧 | 性格診断';
 const description = `Big Five をもとにした全${allTypes.length}タイプの一覧。それぞれのアイコン・名前・一言キャッチから、気になるタイプの紹介ページへ進めます。あなた自身のタイプは50問・約5分の診断で分かります。`;
 
@@ -46,10 +51,28 @@ const listJsonLd = itemListJsonLd(
         </div>
       </article>
 
+      <article class="panel job-search" data-type-search hidden style="margin-top: var(--space-5)">
+        <label class="sr-only" for="type-search-input">タイプを検索</label>
+        <input
+          id="type-search-input"
+          class="job-search-input"
+          type="search"
+          inputmode="search"
+          autocomplete="off"
+          placeholder="タイプ名・キャッチで検索（例: 探究 / リーダー / 共感）"
+        />
+        <p class="job-search-count" id="type-search-count" role="status" aria-live="polite">
+          {allTypes.length}件のタイプ
+        </p>
+        <p class="job-search-empty" id="type-search-empty" hidden>
+          該当するタイプが見つかりませんでした。別のキーワードでお試しください。
+        </p>
+      </article>
+
       <div class="type-grid" style="margin-top: var(--space-5)">
         {
           allTypes.map((type) => (
-            <a class="type-grid-card" href={withBase(`type/${type.id}/`)}>
+            <a class="type-grid-card" href={withBase(`type/${type.id}/`)} data-search={searchIndex(type)}>
               <span class="type-grid-icon" aria-hidden="true">
                 {type.icon}
               </span>
@@ -61,4 +84,7 @@ const listJsonLd = itemListJsonLd(
       </div>
     </div>
   </section>
+  <script>
+    import '../scripts/typeSearch.ts';
+  </script>
 </Base>
